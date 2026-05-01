@@ -113,8 +113,8 @@ Current verified build characteristics:
 
 - target: `esp32s3`
 - board: `esp32_S3_DevKitC_1`
-- flash size: `8MB`
-- partition table: `partitions_8MB.csv`
+- flash size: `16MB`
+- partition table: `partitions_16MB.csv`
 
 For exact manual flashing arguments, use:
 
