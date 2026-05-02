@@ -16,6 +16,7 @@
 #include "esp_log.h"
 #include "esp_err.h"
 #include "esp_system.h"
+#include "esp_wifi.h"
 #include "esp_board_manager_includes.h"
 #include "captive_dns.h"
 #include "cmd_wifi.h"
@@ -38,6 +39,21 @@ static app_claw_storage_paths_t *s_claw_paths;
 static const char *app_fatfs_base_path = "/fatfs";
 
 static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
+
+static void maybe_disable_provisioning_ap_on_sta_ready(void)
+{
+    esp_err_t err = esp_wifi_set_mode(WIFI_MODE_STA);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to disable provisioning AP after STA connect: %s", esp_err_to_name(err));
+        return;
+    }
+
+    wifi_manager_status_t status = {0};
+    wifi_manager_get_status(&status);
+    ESP_LOGI(TAG, "Provisioning AP disabled after STA connect; mode=%s sta_ip=%s",
+             status.mode[0] ? status.mode : "sta",
+             status.sta_ip[0] ? status.sta_ip : "-");
+}
 
 static esp_err_t app_allocate_runtime_state(void)
 {
@@ -364,6 +380,7 @@ void app_main(void)
                 wifi_manager_status_t status = {0};
                 wifi_manager_get_status(&status);
                 ESP_LOGI(TAG, "Wi-Fi STA ready: %s", status.sta_ip);
+                maybe_disable_provisioning_ap_on_sta_ready();
             } else {
                 ESP_LOGW(TAG, "STA could not connect, dropped to AP fallback");
             }
@@ -371,11 +388,15 @@ void app_main(void)
 
         wifi_manager_status_t status = {0};
         wifi_manager_get_status(&status);
-        ESP_LOGW(TAG,
-                 "*** Provisioning portal: SSID=\"%s\" (open) IP=%s URL=http://%s/ ***",
-                 status.ap_ssid,
-                 status.ap_ip,
-                 status.ap_ip);
+        if (status.ap_active) {
+            ESP_LOGW(TAG,
+                     "*** Provisioning portal: SSID=\"%s\" (open) IP=%s URL=http://%s/ ***",
+                     status.ap_ssid,
+                     status.ap_ip,
+                     status.ap_ip);
+        } else {
+            ESP_LOGI(TAG, "Provisioning portal disabled; STA-only mode active");
+        }
     }
 
     ESP_ERROR_CHECK(app_claw_init_storage_paths(s_claw_paths));

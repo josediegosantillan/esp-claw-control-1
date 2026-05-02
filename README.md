@@ -36,6 +36,8 @@ The current app integrates the following capabilities:
 - `cap_llm_inspect`
 - `cap_web_search`
 
+For the relay, button, OLED SSD1306, and Telegram control flow, see `RELAY_OLED_TELEGRAM_SETUP.md`.
+
 ## Quick Start
 
 ### Prerequisites

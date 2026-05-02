@@ -1,5 +1,474 @@
 [
   {
+    "id": "relay_oled_service_startup",
+    "description": "Start the relay/button/OLED background service after boot.",
+    "enabled": true,
+    "consume_on_match": false,
+    "ack": "relay oled service startup",
+    "match": {
+      "event_type": "startup",
+      "event_key": "boot_completed"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_service.lua",
+          "async": true,
+          "name": "relay_oled_service",
+          "exclusive": "relay_oled_service",
+          "replace": true,
+          "args": {
+            "relay_gpio": 4,
+            "relay_active_level": 1,
+            "button_gpio": 5,
+            "button_active_level": 0,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "i2c_freq_hz": 400000,
+            "oled_addr": 60,
+            "oled_width": 128,
+            "oled_height": 64,
+            "enable_oled": true,
+            "default_on": false,
+            "poll_ms": 50,
+            "status_refresh_ms": 1000
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_relay_on",
+    "description": "Turn the relay on from Telegram.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram relay on",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/relay on"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "on",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_relay_off",
+    "description": "Turn the relay off from Telegram.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram relay off",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/relay off"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "off",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_relay_toggle",
+    "description": "Toggle the relay from Telegram.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram relay toggle",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/relay toggle"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "toggle",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_relay_status",
+    "description": "Report relay status from Telegram.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram relay status",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/relay status"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "status",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_relay_encender",
+    "description": "Spanish alias to turn the relay on from Telegram.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram relay encender",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/relay encender"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "encender",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_relay_apagar",
+    "description": "Spanish alias to turn the relay off from Telegram.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram relay apagar",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/relay apagar"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "apagar",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_relay_estado",
+    "description": "Spanish alias to report relay status from Telegram.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram relay estado",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "Luz taller estado"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "status",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_taller_light_on_lower",
+    "description": "Spanish natural-language alias to turn the workshop light on.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram taller light on lower",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "encender luz taller"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "on",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_taller_light_on_capitalized",
+    "description": "Spanish natural-language alias with capitalized first word to turn the workshop light on.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram taller light on capitalized",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "Encender luz taller"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "on",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_taller_light_off_lower",
+    "description": "Spanish natural-language alias to turn the workshop light off.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram taller light off lower",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "apagar luz taller"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "off",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_taller_light_off_capitalized",
+    "description": "Spanish natural-language alias with capitalized first word to turn the workshop light off.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram taller light off capitalized",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "Apagar luz taller"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "off",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
     "id": "im_new_session",
     "description": "Start a fresh persistent chat session when the user sends /new.",
     "enabled": true,
@@ -44,7 +513,7 @@
         "input": {
           "channel": "{{event.source_channel}}",
           "chat_id": "{{event.chat_id}}",
-          "message": "🦞 ESP-Claw is snapping on it..."
+          "message": "🦞 ESP-Claw esta trabajando...."
         }
       }
     ]
