@@ -23,6 +23,10 @@
             "relay_active_level": 1,
             "button_gpio": 5,
             "button_active_level": 0,
+            "relay2_gpio": 6,
+            "relay2_active_level": 0,
+            "button2_gpio": 7,
+            "button2_active_level": 0,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,
@@ -32,6 +36,7 @@
             "oled_height": 64,
             "enable_oled": true,
             "default_on": false,
+            "default_on2": false,
             "poll_ms": 50,
             "status_refresh_ms": 1000
           }
@@ -61,6 +66,9 @@
             "action": "on",
             "relay_gpio": 4,
             "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,
@@ -100,6 +108,9 @@
             "action": "off",
             "relay_gpio": 4,
             "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,
@@ -139,6 +150,9 @@
             "action": "toggle",
             "relay_gpio": 4,
             "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,
@@ -178,6 +192,8 @@
             "action": "status",
             "relay_gpio": 4,
             "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,
@@ -217,6 +233,9 @@
             "action": "encender",
             "relay_gpio": 4,
             "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,
@@ -256,6 +275,9 @@
             "action": "apagar",
             "relay_gpio": 4,
             "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,
@@ -295,6 +317,8 @@
             "action": "status",
             "relay_gpio": 4,
             "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,
@@ -334,6 +358,9 @@
             "action": "on",
             "relay_gpio": 4,
             "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,
@@ -373,6 +400,9 @@
             "action": "on",
             "relay_gpio": 4,
             "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,
@@ -412,6 +442,9 @@
             "action": "off",
             "relay_gpio": 4,
             "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,
@@ -451,6 +484,387 @@
             "action": "off",
             "relay_gpio": 4,
             "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_patio_light_on_lower",
+    "description": "Spanish natural-language alias to turn the patio light on.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram patio light on lower",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "encender luz patio"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "on",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_patio_light_on_capitalized",
+    "description": "Spanish natural-language alias with capitalized first word to turn the patio light on.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram patio light on capitalized",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "Encender luz patio"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "on",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_patio_light_off_lower",
+    "description": "Spanish natural-language alias to turn the patio light off.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram patio light off lower",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "apagar luz patio"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "off",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_patio_light_off_capitalized",
+    "description": "Spanish natural-language alias with capitalized first word to turn the patio light off.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram patio light off capitalized",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "Apagar luz patio"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "off",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_patio_light_status",
+    "description": "Spanish natural-language alias to report patio light status.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram patio light status",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "Luz patio estado"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "status",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_relay2_on",
+    "description": "Turn relay 2 on from Telegram.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram relay2 on",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/relay2 on"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "on",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_relay2_off",
+    "description": "Turn relay 2 off from Telegram.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram relay2 off",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/relay2 off"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "off",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_relay2_toggle",
+    "description": "Toggle relay 2 from Telegram.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram relay2 toggle",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/relay2 toggle"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "toggle",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_relay2_status",
+    "description": "Report relay 2 status from Telegram.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram relay2 status",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/relay2 status"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "status",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,

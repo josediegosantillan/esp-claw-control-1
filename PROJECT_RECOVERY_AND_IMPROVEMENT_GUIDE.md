@@ -1,4 +1,4 @@
-# Guia para recuperar y mejorar `edge_agent`
+# Guia para recuperar y mantener `edge_agent`
 
 ## Objetivo
 
@@ -12,21 +12,20 @@ Cubre:
 - como hacer un build limpio
 - como flashear sin usar offsets viejos
 - que archivos son fuente y cuales son generados
-- que mejoras conviene hacer despues
+- que comportamiento actual tienen relays, botones y almacenamiento FATFS
 
 ## Estado real del repo hoy
 
-Estos puntos salen del contenido versionado y de un build limpio verificado en este workspace:
+Estos puntos salen del contenido versionado y de los artefactos actuales de este workspace:
 
 - ESP-IDF recomendado: `5.5.4`
 - ruta real del proyecto: `C:\esp_projects\esp_claw_control\esp-claw\application\edge_agent`
 - placa actualmente generada en `components/gen_bmgr_codes`: `esp32_S3_DevKitC_1`
 - target efectivo en `board_manager.defaults`: `esp32s3`
-- flash efectiva en `board_manager.defaults`: `8MB`
+- flash declarada en `board_manager.defaults`: `16MB`
 - perfil declarado en `board_manager.defaults`: `QIO` y `120M`
-- perfil efectivo del build verificado: `dio` y `80m`
-- particion base en `sdkconfig.defaults`: `partitions_8MB.csv`
-- build limpio verificado: `OK`
+- perfil efectivo del build actual: `dio` y `80m`
+- particion base en `sdkconfig.defaults`: `partitions_16MB.csv`
 
 Referencia actual:
 
@@ -36,13 +35,13 @@ CONFIG_IDF_TARGET="esp32s3"
 CONFIG_ESP_BOARD_NAME="esp32_S3_DevKitC_1"
 CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
 CONFIG_ESPTOOLPY_FLASHFREQ_120M=y
-CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
 CONFIG_SPIRAM_MODE_OCT=y
 ```
 
 ```ini
 # sdkconfig.defaults
-CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_8MB.csv"
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_16MB.csv"
 CONFIG_LV_BUILD_EXAMPLES=n
 CONFIG_LV_BUILD_DEMOS=n
 ```
@@ -50,7 +49,7 @@ CONFIG_LV_BUILD_DEMOS=n
 ```json
 # build/flasher_args.json
 "flash_mode": "dio"
-"flash_size": "8MB"
+"flash_size": "16MB"
 "flash_freq": "80m"
 ```
 
@@ -64,6 +63,8 @@ $env:IDF_PATH='C:\esp\v5.5.4\esp-idf'
 $env:IDF_TOOLS_PATH='C:\Espressif\tools'
 $env:IDF_PYTHON_ENV_PATH='C:\Espressif\tools\python\v5.5.4\venv'
 $env:IDF_EXTRA_ACTIONS_PATH='C:\esp_projects\esp_claw_control\esp-claw\application\edge_agent\managed_components\espressif__esp_board_manager'
+$env:PYTHONUTF8='1'
+$env:PYTHONIOENCODING='utf-8'
 idf.py bmgr -l
 idf.py bmgr -c ./boards -b esp32_S3_DevKitC_1
 Remove-Item -Recurse -Force .\build -ErrorAction SilentlyContinue
@@ -78,13 +79,6 @@ Resultado esperado:
 - `board_manager.defaults` converge en `esp32s3`
 - el build usa la placa `esp32_S3_DevKitC_1`
 - el flasheo usa los argumentos del build actual
-
-Si `bmgr` falla en Windows con un `UnicodeEncodeError` al imprimir iconos Unicode, fuerza UTF-8 en la shell:
-
-```powershell
-$env:PYTHONUTF8='1'
-$env:PYTHONIOENCODING='utf-8'
-```
 
 ## 1. Preparar el entorno
 
@@ -105,27 +99,22 @@ $env:IDF_PATH='C:\esp\v5.5.4\esp-idf'
 $env:IDF_TOOLS_PATH='C:\Espressif\tools'
 $env:IDF_PYTHON_ENV_PATH='C:\Espressif\tools\python\v5.5.4\venv'
 $env:IDF_EXTRA_ACTIONS_PATH='C:\esp_projects\esp_claw_control\esp-claw\application\edge_agent\managed_components\espressif__esp_board_manager'
+$env:PYTHONUTF8='1'
+$env:PYTHONIOENCODING='utf-8'
 Set-Location 'C:\esp_projects\esp_claw_control\esp-claw\application\edge_agent'
 ```
 
 Si se usa una PowerShell normal y no una terminal de ESP-IDF, tambien hay que asegurar que `cmake`, `ninja` y las toolchains esten en `PATH`.
 
-En Windows conviene definir tambien:
-
-```powershell
-$env:PYTHONUTF8='1'
-$env:PYTHONIOENCODING='utf-8'
-```
-
 ## 2. Seleccionar la placa correcta
 
-La placa soportada y ya alineada con este repo es:
+La placa soportada y alineada con este repo es:
 
 ```text
 esp32_S3_DevKitC_1
 ```
 
-Antes de regenerar, conviene listar las placas visibles para confirmar que la extension cargo bien:
+Antes de regenerar, conviene listar las placas visibles:
 
 ```powershell
 idf.py bmgr -l
@@ -161,15 +150,13 @@ Remove-Item -Recurse -Force .\build -ErrorAction SilentlyContinue
 idf.py build
 ```
 
-No hace falta documentar carpetas como `build_disable_gen` o `build_disable_gen2` como parte del flujo normal. Si aparecen por pruebas puntuales, tratarlas como artefactos locales, no como contrato del proyecto.
-
 ## 4. Verificar la configuracion efectiva
 
 Antes de construir, revisar estos puntos:
 
 - `components/gen_bmgr_codes/board_manager.defaults` debe declarar `CONFIG_IDF_TARGET="esp32s3"`
 - `components/gen_bmgr_codes/board_manager.defaults` debe declarar `CONFIG_ESP_BOARD_NAME="esp32_S3_DevKitC_1"`
-- `components/gen_bmgr_codes/board_manager.defaults` debe reflejar el tamano de flash efectivo
+- `components/gen_bmgr_codes/board_manager.defaults` debe reflejar `16MB`
 - `sdkconfig.defaults` no debe contradecir el layout esperado
 - `sdkconfig` efectivo manda sobre el perfil final de flash que termina en `build/flasher_args.json`
 
@@ -202,27 +189,30 @@ Flujo normal:
 idf.py build
 ```
 
-Build verificado en este repo:
+Artefactos actuales esperables:
 
-- `edge_agent.bin` generado correctamente
-- app offset: `0x20000`
-- storage offset: `0x620000`
-- particion minima de app: `0x300000`
-- espacio libre reportado: `0xfe150`
+- `edge_agent.bin`
+- `build/flasher_args.json`
+- `build/flash_project_args`
 
-Despues del build, conviene validar:
+Layout actual:
 
-- `build/edge_agent.elf`
-- `build/edge_agent.bin`
-- `build/flasher_args.json` o `build/flash_project_args`
+```text
+flash mode: dio
+flash freq: 80m
+flash size: 16MB
+0x0       bootloader/bootloader.bin
+0x8000    partition_table/partition-table.bin
+0xf000    ota_data_initial.bin
+0x20000   edge_agent.bin
+0xb20000  storage.bin
+```
 
 Notas practicas:
 
 - en este proyecto conviene dejar `CONFIG_LV_BUILD_EXAMPLES=n`
 - en este proyecto conviene dejar `CONFIG_LV_BUILD_DEMOS=n`
 - con demos y ejemplos activos, el build en Windows crece mucho y puede fallar al empaquetar `lvgl` o `freetype`
-
-Si esos archivos no aparecen, no documentar offsets manuales como definitivos. Tomarlos siempre del build que acabas de generar.
 
 ## 6. Flasheo recomendado
 
@@ -241,26 +231,33 @@ Fuente de verdad:
 - `build/flasher_args.json`
 - `build/flash_project_args`
 
-Layout verificado del build actual:
-
-```text
-flash mode: dio
-flash freq: 80m
-flash size: 8MB
-0x0      bootloader/bootloader.bin
-0x8000   partition_table/partition-table.bin
-0xf000   ota_data_initial.bin
-0x20000  edge_agent.bin
-0x620000 storage.bin
-```
-
 Regla operativa:
 
 - no reutilizar offsets copiados de otra corrida
 - no mezclar perfiles de `8MB` y `16MB`
-- no asumir `dio 40m` si `board_manager.defaults` hoy marca `QIO` y `120M`
+- no asumir `dio 40m` o cualquier perfil viejo sin revisar el build actual
 
-## 7. Como modificar la definicion de placa
+## 7. Estado actual de relays y botones
+
+Configuracion actual:
+
+- rele 1 en `GPIO4`, activo en alto
+- rele 2 en `GPIO6`, activo en bajo
+- boton 1 en `GPIO5`, activo en bajo
+- boton 2 en `GPIO7`, activo en bajo
+
+Comportamiento actual:
+
+- en cada boot ambos reles se fuerzan a `OFF`
+- durante el uso normal el estado compartido se guarda en `/fatfs/relay_state.txt`
+- botones y Telegram operan sobre el mismo estado persistido
+- si se corta la energia, el sistema no restaura el ultimo estado; vuelve con ambos reles apagados
+
+Nota operativa:
+
+- el boton fisico puede responder mas lento que Telegram porque usa `single_click` por sondeo y debounce
+
+## 8. Como modificar la definicion de placa
 
 La variante actualmente usada vive en:
 
@@ -280,18 +277,20 @@ Flujo seguro:
 
 No editar a mano `components/gen_bmgr_codes` como solucion permanente, porque es codigo generado.
 
-## 8. Codigo fuente vs codigo generado
+## 9. Codigo fuente vs codigo generado
 
 Archivos fuente del proyecto:
 
 - `boards/...`
 - `sdkconfig.defaults`
-- `partitions_8MB.csv`
 - `partitions_16MB.csv`
+- `partitions_8MB.csv`
 - `tools/cmake/esp_idf_patch.cmake`
 - `tools/cmake/flash_partition_defaults.cmake`
 - `tools/cmake/board_manager_patch.cmake`
 - `tools/bmgr_patch.py`
+- `fatfs_image/scripts/user/*`
+- `fatfs_image/router_rules/router_rules.json`
 
 Archivos generados o regenerables:
 
@@ -304,7 +303,7 @@ Regla de trabajo:
 - los cambios duraderos van a los archivos fuente
 - lo generado se valida, pero no se toma como punto de edicion manual
 
-## 9. Problemas conocidos y prevencion
+## 10. Problemas conocidos y prevencion
 
 ### Problema 1. `bmgr` no existe o no reconoce `-c`
 
@@ -330,44 +329,7 @@ Remove-Item -Recurse -Force .\build -ErrorAction SilentlyContinue
 idf.py build
 ```
 
-Chequeo rapido:
-
-- `board_manager.defaults` debe quedar en `esp32s3`
-- el nombre de placa debe quedar en `esp32_S3_DevKitC_1`
-
-### Problema 3. Faltan referencias de `gen_bmgr_codes`
-
-Causa probable:
-
-- `components/gen_bmgr_codes` no fue regenerado
-- el build quedo a mitad de camino
-- hay archivos generados incompletos
-
-Correccion:
-
-```powershell
-idf.py bmgr -x
-idf.py bmgr -c ./boards -b esp32_S3_DevKitC_1
-Remove-Item -Recurse -Force .\build -ErrorAction SilentlyContinue
-idf.py build
-```
-
-No asumir que existe un modo stub especial para desactivar `gen_bmgr_codes`. En este repo no hay un mecanismo documentado ni implementado para eso.
-
-### Problema 4. El parche de ESP-IDF falla al configurar
-
-Contexto real:
-
-- `CMakeLists.txt` incluye `tools/cmake/esp_idf_patch.cmake`
-- hoy ese script usa `git apply`
-- hoy el script aplica el parche con tolerancia a whitespace y line endings
-
-Prevencion:
-
-- conservar `tools/esp-idf.patch` en LF
-- si vuelve a fallar, revisar primero `tools/cmake/esp_idf_patch.cmake` y `tools/esp-idf.patch`
-
-### Problema 5. El layout de flash queda inconsistente
+### Problema 3. El layout de flash queda inconsistente
 
 Causa probable: mezcla entre `board_manager.defaults`, `sdkconfig.defaults` y offsets manuales viejos.
 
@@ -378,7 +340,7 @@ Correccion:
 - recompilar
 - tomar offsets solo desde los artefactos del build actual
 
-### Problema 6. El build falla o se vuelve enorme por LVGL
+### Problema 4. El build falla o se vuelve enorme por LVGL
 
 Causa probable:
 
@@ -392,45 +354,17 @@ Correccion:
 - borrar `build`
 - recompilar
 
-Esto ya fue verificado y reduce de forma importante el volumen de compilacion innecesaria.
-
-### Problema 7. Warning de `ESP_ROM_ELF_DIR` al final del build
+### Problema 5. Warning de `ESP_ROM_ELF_DIR` al final del build
 
 Sintoma:
 
 - el build termina bien pero CMake deja un warning al generar `gdbinit`
-
-Causa probable:
-
-- falta exportar `ESP_ROM_ELF_DIR` en el entorno completo de ESP-IDF
 
 Impacto:
 
 - no bloquea la compilacion
 - no bloquea el binario final
 - solo afecta la generacion auxiliar de `gdbinit`
-
-## 10. Mejoras recomendadas
-
-### Corto plazo
-
-1. agregar un script reproducible de PowerShell para preparar entorno, ejecutar `bmgr`, limpiar y compilar
-2. actualizar `README.md` para que use `idf.py bmgr` como flujo principal
-3. documentar el puerto serie y ejemplos de flash por plataforma
-4. dejar esta guia como referencia unica para recuperacion del proyecto
-5. agregar export de `PYTHONUTF8` y `PYTHONIOENCODING` al flujo Windows
-
-### Mediano plazo
-
-1. agregar una validacion CI que falle si `board_manager.defaults` y la placa esperada no convergen
-2. agregar una validacion CI sobre el tamano de flash y la particion elegida
-3. automatizar el chequeo de `build/flasher_args.json` despues del build
-
-### Largo plazo
-
-1. reducir diferencias confusas entre `sdkconfig.defaults` y los defaults de placa
-2. decidir si el perfil definitivo debe quedarse en `8MB` o migrar a otra variante de placa
-3. crear una variante nueva en `boards/` solo cuando sus archivos fuente realmente existan y queden versionados
 
 ## 11. Secuencia corta para el dia a dia
 
@@ -445,17 +379,17 @@ idf.py flash monitor
 ## 12. Archivos clave
 
 - `README.md`
+- `RELAY_OLED_TELEGRAM_SETUP.md`
 - `CMakeLists.txt`
 - `sdkconfig.defaults`
 - `sdkconfig`
-- `partitions_8MB.csv`
 - `partitions_16MB.csv`
-- `tools/cmake/esp_idf_patch.cmake`
-- `tools/cmake/flash_partition_defaults.cmake`
-- `tools/cmake/board_manager_patch.cmake`
-- `tools/bmgr_patch.py`
+- `partitions_8MB.csv`
+- `fatfs_image/scripts/user/relay_oled_shared.lua`
+- `fatfs_image/scripts/user/relay_oled_command.lua`
+- `fatfs_image/scripts/user/relay_oled_service.lua`
+- `fatfs_image/router_rules/router_rules.json`
 - `components/gen_bmgr_codes/board_manager.defaults`
-- `managed_components/espressif__esp_board_manager/idf_ext.py`
 - `boards/espressif/esp32_S3_DevKitC_1/`
 
 ## 13. Regla de trabajo para no romper el proyecto
@@ -464,8 +398,9 @@ Primero se cambia la fuente de configuracion.
 
 - si es una definicion de placa, se edita `boards/...`
 - si es una preferencia base del proyecto, se edita `sdkconfig.defaults`
+- si es comportamiento de relays, se editan `fatfs_image/scripts/user/*` y `fatfs_image/router_rules/router_rules.json`
 
-Despues se regenera con `bmgr`.
+Despues se regenera con `bmgr` cuando corresponde.
 
 Despues se limpia `build` si hubo cambios de placa, target o flash.
 

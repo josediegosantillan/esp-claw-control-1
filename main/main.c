@@ -14,12 +14,14 @@
 #include "http_server.h"
 #include "esp_vfs_fat.h"
 #include "esp_log.h"
+#include "esp_check.h"
 #include "esp_err.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include "esp_board_manager_includes.h"
 #include "captive_dns.h"
 #include "cmd_wifi.h"
+#include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #if CONFIG_APP_CLAW_CAP_IM_WECHAT
@@ -39,6 +41,83 @@ static app_claw_storage_paths_t *s_claw_paths;
 static const char *app_fatfs_base_path = "/fatfs";
 
 static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
+
+static esp_err_t init_relay_gpios_safe_state(void)
+{
+#if CONFIG_ESP_BOARD_ESP32_S3_DEVKITC_1
+    static const struct {
+        gpio_num_t pin;
+        int off_level;
+    } s_relay_pins[] = {
+        { GPIO_NUM_4, 0 },
+        { GPIO_NUM_6, 1 },
+    };
+
+    for (size_t i = 0; i < sizeof(s_relay_pins) / sizeof(s_relay_pins[0]); i++) {
+        ESP_RETURN_ON_ERROR(gpio_reset_pin(s_relay_pins[i].pin), TAG, "Failed to reset relay GPIO%d", (int)s_relay_pins[i].pin);
+        ESP_RETURN_ON_ERROR(gpio_set_direction(s_relay_pins[i].pin, GPIO_MODE_OUTPUT), TAG, "Failed to set relay GPIO%d output", (int)s_relay_pins[i].pin);
+        ESP_RETURN_ON_ERROR(gpio_set_level(s_relay_pins[i].pin, s_relay_pins[i].off_level), TAG, "Failed to drive relay GPIO%d to safe OFF level", (int)s_relay_pins[i].pin);
+    }
+
+    ESP_LOGI(TAG, "Initialized relay GPIOs to safe OFF state");
+#endif
+    return ESP_OK;
+}
+
+static esp_err_t init_unused_gpios_safe_state(void)
+{
+#if CONFIG_ESP_BOARD_ESP32_S3_DEVKITC_1
+    /* Keep unused header pins from floating on the ESP32-S3 DevKitC-1.
+     * Excluded on purpose:
+     * - GPIO19/20: USB D-/D+
+     * - GPIO26..37: SPI flash/PSRAM
+     * - GPIO38: WS2812 data on this board config
+     * - GPIO43/44: UART console
+     */
+    static const gpio_num_t s_unused_pins[] = {
+        GPIO_NUM_1,
+        GPIO_NUM_2,
+        GPIO_NUM_3,
+        GPIO_NUM_8,
+        GPIO_NUM_9,
+        GPIO_NUM_10,
+        GPIO_NUM_11,
+        GPIO_NUM_12,
+        GPIO_NUM_13,
+        GPIO_NUM_14,
+        GPIO_NUM_15,
+        GPIO_NUM_16,
+        GPIO_NUM_17,
+        GPIO_NUM_18,
+        GPIO_NUM_21,
+        GPIO_NUM_39,
+        GPIO_NUM_40,
+        GPIO_NUM_41,
+        GPIO_NUM_42,
+        GPIO_NUM_45,
+        GPIO_NUM_46,
+        GPIO_NUM_47,
+        GPIO_NUM_48,
+    };
+
+    const gpio_config_t cfg = {
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_ENABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+
+    for (size_t i = 0; i < sizeof(s_unused_pins) / sizeof(s_unused_pins[0]); i++) {
+        gpio_config_t pin_cfg = cfg;
+        pin_cfg.pin_bit_mask = 1ULL << s_unused_pins[i];
+        ESP_RETURN_ON_ERROR(gpio_config(&pin_cfg), TAG, "Failed to stabilize GPIO%d", (int)s_unused_pins[i]);
+    }
+
+    ESP_LOGI(TAG, "Configured %u unused GPIOs with pull-downs",
+             (unsigned int)(sizeof(s_unused_pins) / sizeof(s_unused_pins[0])));
+#endif
+    return ESP_OK;
+}
 
 static void maybe_disable_provisioning_ap_on_sta_ready(void)
 {
@@ -340,6 +419,8 @@ void app_main(void)
     app_config_to_claw(s_config, s_claw_config);
     init_timezone(app_config_get_timezone(s_config)); // no need to check error
     ESP_ERROR_CHECK(esp_board_manager_init());
+    ESP_ERROR_CHECK(init_relay_gpios_safe_state());
+    ESP_ERROR_CHECK(init_unused_gpios_safe_state());
     ESP_ERROR_CHECK(app_claw_ui_start());
     ESP_ERROR_CHECK(init_fatfs());
     ESP_ERROR_CHECK(wifi_manager_init());

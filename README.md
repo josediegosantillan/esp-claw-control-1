@@ -22,6 +22,7 @@ The current runtime depends on the following local directories:
 - `/fatfs/scripts`: Lua scripts
 - `/fatfs/router_rules/router_rules.json`: automation rules
 - `/fatfs/inbox`: message attachment storage
+- `/fatfs/relay_state.txt`: persisted relay state used during normal runtime
 
 The current app integrates the following capabilities:
 
@@ -37,6 +38,24 @@ The current app integrates the following capabilities:
 - `cap_web_search`
 
 For the relay, button, OLED SSD1306, and Telegram control flow, see `RELAY_OLED_TELEGRAM_SETUP.md`.
+
+## Relay Summary
+
+Current default hardware mapping:
+
+- Relay 1: `GPIO4`, active high
+- Button 1: `GPIO5`, active low
+- Relay 2: `GPIO6`, active low
+- Button 2: `GPIO7`, active low
+- OLED SDA: `GPIO8`
+- OLED SCL: `GPIO9`
+
+Current runtime behavior:
+
+- On every boot, both relays are forced to `OFF`
+- The last runtime state is stored in `/fatfs/relay_state.txt`
+- During a normal session, buttons and Telegram share the same persisted relay state
+- After a power loss, the device does not restore the last relay state; it starts with both relays off
 
 ## Quick Start
 
@@ -75,9 +94,9 @@ idf.py bmgr -c ./boards -b esp32_S3_DevKitC_1
 
 `idf.py bmgr` is the preferred workflow. `idf.py gen-bmgr-config` still exists as a legacy alias, but this repo should use `bmgr` as the default command.
 
-2. Configure Wi-Fi, LLM, IM, search engine, and related parameters:
+2. Configure Wi-Fi, LLM, IM, search engine, and related parameters.
 
-The key demo settings include:
+Key demo settings include:
 
 - Wi-Fi SSID / Password
 - LLM API Key / Provider / Model
@@ -86,7 +105,7 @@ The key demo settings include:
 - Brave / Tavily Search Key
 - Timezone
 
-Key Notes:
+Key notes:
 
 - IM bot token: available from Telegram [@BotFather](https://t.me/BotFather) or [QQ Bot](https://q.qq.com/qqbot/openclaw/login.html)
 - LLM API key: available from [Anthropic Console](https://console.anthropic.com), [OpenAI Platform](https://platform.openai.com), or [Alibaba Cloud Bailian](https://bailian.console.aliyun.com/#/api-key)
@@ -126,11 +145,11 @@ For exact manual flashing arguments, use:
 The current verified layout is:
 
 ```text
-0x0      bootloader/bootloader.bin
-0x8000   partition_table/partition-table.bin
-0xf000   ota_data_initial.bin
-0x20000  edge_agent.bin
-0x620000 storage.bin
+0x0       bootloader/bootloader.bin
+0x8000    partition_table/partition-table.bin
+0xf000    ota_data_initial.bin
+0x20000   edge_agent.bin
+0xb20000  storage.bin
 ```
 
 If you need the full recovery and maintenance workflow, see `PROJECT_RECOVERY_AND_IMPROVEMENT_GUIDE.md`.

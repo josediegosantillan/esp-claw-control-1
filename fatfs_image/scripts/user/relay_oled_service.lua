@@ -39,8 +39,9 @@ end
 local current_state = shared.read_state(cfg)
 local last_display_state = nil
 local last_refresh_ms = 0
+local last_state_poll_ms = 0
 
-local btn_handle = nil
+local btn_handles = {}
 local bus = nil
 local dev = nil
 local oled = nil
@@ -126,11 +127,18 @@ local function draw_ip_line(y, ip)
     oled:draw_text(18, y, ip or "--", true)
 end
 
-local function oled_update(is_on)
+local function states_equal(a, b)
+    return a
+        and b
+        and a.relay1 == b.relay1
+        and a.relay2 == b.relay2
+end
+
+local function oled_update(states)
     if not oled then
         return
     end
-    if last_display_state == is_on and (last_refresh_ms % cfg.status_refresh_ms) ~= 0 then
+    if states_equal(last_display_state, states) and (last_refresh_ms % cfg.status_refresh_ms) ~= 0 then
         return
     end
 
@@ -142,17 +150,23 @@ local function oled_update(is_on)
     draw_hline(17)
     draw_label_value(22, "SISTEMA:", runtime.system_online and "ONLINE" or "OFFLINE")
     draw_label_value(32, "WIFI:", string.format("%d%%", runtime.wifi_percent))
-    draw_label_value(42, "RELE:", is_on and "ON" or "OFF")
+    draw_label_value(42, "R1/R2:", string.format("%s/%s", states.relay1 and "ON" or "OFF", states.relay2 and "ON" or "OFF"))
     draw_ip_line(52, runtime.ip)
     oled:show()
-    last_display_state = is_on
+    last_display_state = {
+        relay1 = states.relay1,
+        relay2 = states.relay2,
+    }
 end
 
 local function cleanup()
-    if btn_handle then
-        pcall(button.off, btn_handle)
-        pcall(button.close, btn_handle)
-        btn_handle = nil
+    for i = 1, #btn_handles do
+        local handle = btn_handles[i]
+        if handle then
+            pcall(button.off, handle)
+            pcall(button.close, handle)
+            btn_handles[i] = nil
+        end
     end
     if oled then
         pcall(function() oled:close() end)
@@ -170,20 +184,31 @@ end
 
 local function init_relay()
     shared.ensure_runtime(cfg)
-    current_state = shared.read_state(cfg)
+    current_state = shared.reset_state(cfg)
 end
 
-local function init_button()
-    local handle, err = button.new(cfg.button_gpio, cfg.button_active_level)
+local function init_button(relay_index, button_gpio, button_active_level)
+    local handle, err = button.new(button_gpio, button_active_level)
     if not handle then
         error("[relay_service] button.new failed: " .. tostring(err))
     end
-    btn_handle = handle
+    btn_handles[#btn_handles + 1] = handle
 
-    button.on(btn_handle, "single_click", function()
-        current_state = shared.toggle_state(cfg)
+    button.on(handle, "press_down", function()
+        print(string.format("[relay_service] button%d press_down gpio=%d", relay_index, button_gpio))
+    end)
+
+    button.on(handle, "press_up", function()
+        print(string.format("[relay_service] button%d press_up gpio=%d", relay_index, button_gpio))
+    end)
+
+    button.on(handle, "single_click", function()
+        current_state = shared.toggle_state(cfg, relay_index)
         oled_update(current_state)
-        print("[relay_service] button single_click => " .. (current_state and "ON" or "OFF"))
+        print(string.format("[relay_service] button%d single_click => r1=%s r2=%s",
+            relay_index,
+            current_state.relay1 and "ON" or "OFF",
+            current_state.relay2 and "ON" or "OFF"))
     end)
 end
 
@@ -215,28 +240,42 @@ end
 
 local function run()
     shared.ensure_runtime(cfg)
-    current_state = shared.read_state(cfg)
+    current_state = shared.reset_state(cfg)
     print("[relay_service] starting " .. shared.format_status(cfg, current_state))
     init_relay()
-    init_button()
+    init_button(1, cfg.button_gpio, cfg.button_active_level)
+    init_button(2, cfg.button2_gpio, cfg.button2_active_level)
+    print(string.format("[relay_service] buttons ready: b1 gpio=%d active=%d | b2 gpio=%d active=%d",
+        cfg.button_gpio,
+        cfg.button_active_level,
+        cfg.button2_gpio,
+        cfg.button2_active_level))
     init_oled()
 
     while true do
         button.dispatch()
-        local state_from_manager = shared.read_state(cfg)
-        if state_from_manager ~= current_state then
-            current_state = state_from_manager
-            oled_update(current_state)
-            print("[relay_service] manager state => " .. (current_state and "ON" or "OFF"))
-        end
 
         last_refresh_ms = last_refresh_ms + cfg.poll_ms
+        last_state_poll_ms = last_state_poll_ms + cfg.poll_ms
+
+        if last_state_poll_ms >= 200 then
+            last_state_poll_ms = 0
+            local state_from_manager = shared.read_state(cfg)
+            if not states_equal(state_from_manager, current_state) then
+                current_state = state_from_manager
+                oled_update(current_state)
+                print(string.format("[relay_service] manager state => r1=%s r2=%s",
+                    current_state.relay1 and "ON" or "OFF",
+                    current_state.relay2 and "ON" or "OFF"))
+            end
+        end
+
         if oled and last_refresh_ms >= cfg.status_refresh_ms then
             last_refresh_ms = 0
             oled_update(current_state)
         end
 
-        delay.delay_ms(cfg.poll_ms)
+        delay.delay_ms(math.min(cfg.poll_ms, 20))
     end
 end
 
