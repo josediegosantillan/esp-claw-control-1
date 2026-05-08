@@ -45,6 +45,604 @@
     ]
   },
   {
+    "id": "telegram_panel",
+    "description": "Show the Telegram inline button control panel for both relays.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram panel",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/panel"
+    },
+    "actions": [
+      {
+        "type": "call_cap",
+        "cap": "tg_send_message",
+        "input": {
+          "chat_id": "{{event.chat_id}}",
+          "message": "Panel ESP-Claw\nControles rapidos para taller y patio.",
+          "reply_markup": {
+            "inline_keyboard": [
+              [
+                {
+                  "text": "Taller ON",
+                  "callback_data": "relay:on"
+                },
+                {
+                  "text": "Taller OFF",
+                  "callback_data": "relay:off"
+                }
+              ],
+              [
+                {
+                  "text": "Taller Toggle",
+                  "callback_data": "relay:toggle"
+                },
+                {
+                  "text": "Taller Estado",
+                  "callback_data": "relay:status"
+                }
+              ],
+              [
+                {
+                  "text": "Patio ON",
+                  "callback_data": "relay2:on"
+                },
+                {
+                  "text": "Patio OFF",
+                  "callback_data": "relay2:off"
+                }
+              ],
+              [
+                {
+                  "text": "Patio Toggle",
+                  "callback_data": "relay2:toggle"
+                },
+                {
+                  "text": "Patio Estado",
+                  "callback_data": "relay2:status"
+                }
+              ],
+              [
+                {
+                  "text": "Actualizar",
+                  "callback_data": "panel:refresh"
+                }
+              ]
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_menu",
+    "description": "Show the Telegram command menu for relay control.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram menu",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/menu"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "menu",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_help",
+    "description": "Show the Telegram help menu for relay control.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram help",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/help"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "help",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_ayuda",
+    "description": "Show the Telegram help menu in Spanish for relay control.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram ayuda",
+    "match": {
+      "event_type": "message",
+      "event_key": "text",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "/ayuda"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "ayuda",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_callback_relay_on",
+    "description": "Turn relay 1 on from a Telegram callback button.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram callback relay on",
+    "match": {
+      "event_type": "callback_query",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "relay:on"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "on",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_callback_relay_off",
+    "description": "Turn relay 1 off from a Telegram callback button.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram callback relay off",
+    "match": {
+      "event_type": "callback_query",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "relay:off"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "off",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_callback_relay_toggle",
+    "description": "Toggle relay 1 from a Telegram callback button.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram callback relay toggle",
+    "match": {
+      "event_type": "callback_query",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "relay:toggle"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "toggle",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_callback_relay_status",
+    "description": "Report relay 1 status from a Telegram callback button.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram callback relay status",
+    "match": {
+      "event_type": "callback_query",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "relay:status"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "status",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 1,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_callback_relay2_on",
+    "description": "Turn relay 2 on from a Telegram callback button.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram callback relay2 on",
+    "match": {
+      "event_type": "callback_query",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "relay2:on"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "on",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_callback_relay2_off",
+    "description": "Turn relay 2 off from a Telegram callback button.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram callback relay2 off",
+    "match": {
+      "event_type": "callback_query",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "relay2:off"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "off",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_callback_relay2_toggle",
+    "description": "Toggle relay 2 from a Telegram callback button.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram callback relay2 toggle",
+    "match": {
+      "event_type": "callback_query",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "relay2:toggle"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "toggle",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_callback_relay2_status",
+    "description": "Report relay 2 status from a Telegram callback button.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram callback relay2 status",
+    "match": {
+      "event_type": "callback_query",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "relay2:status"
+    },
+    "actions": [
+      {
+        "type": "run_script",
+        "input": {
+          "path": "user/relay_oled_command.lua",
+          "args": {
+            "action": "status",
+            "relay_gpio": 4,
+            "button_gpio": 5,
+            "relay2_gpio": 6,
+            "button2_gpio": 7,
+            "relay_index": 2,
+            "i2c_port": 0,
+            "i2c_sda": 8,
+            "i2c_scl": 9,
+            "oled_addr": 60,
+            "enable_oled": true
+          }
+        }
+      },
+      {
+        "type": "send_message",
+        "input": {
+          "channel": "{{event.source_channel}}",
+          "chat_id": "{{event.chat_id}}"
+        }
+      }
+    ]
+  },
+  {
+    "id": "telegram_callback_panel_refresh",
+    "description": "Refresh the Telegram inline button control panel.",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram callback panel refresh",
+    "match": {
+      "event_type": "callback_query",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "panel:refresh"
+    },
+    "actions": [
+      {
+        "type": "call_cap",
+        "cap": "tg_send_message",
+        "input": {
+          "chat_id": "{{event.chat_id}}",
+          "message": "Panel ESP-Claw\nControles rapidos para taller y patio.",
+          "reply_markup": {
+            "inline_keyboard": [
+              [
+                {
+                  "text": "Taller ON",
+                  "callback_data": "relay:on"
+                },
+                {
+                  "text": "Taller OFF",
+                  "callback_data": "relay:off"
+                }
+              ],
+              [
+                {
+                  "text": "Taller Toggle",
+                  "callback_data": "relay:toggle"
+                },
+                {
+                  "text": "Taller Estado",
+                  "callback_data": "relay:status"
+                }
+              ],
+              [
+                {
+                  "text": "Patio ON",
+                  "callback_data": "relay2:on"
+                },
+                {
+                  "text": "Patio OFF",
+                  "callback_data": "relay2:off"
+                }
+              ],
+              [
+                {
+                  "text": "Patio Toggle",
+                  "callback_data": "relay2:toggle"
+                },
+                {
+                  "text": "Patio Estado",
+                  "callback_data": "relay2:status"
+                }
+              ],
+              [
+                {
+                  "text": "Actualizar",
+                  "callback_data": "panel:refresh"
+                }
+              ]
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
     "id": "telegram_relay_on",
     "description": "Turn the relay on from Telegram.",
     "enabled": true,

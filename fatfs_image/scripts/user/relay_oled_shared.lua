@@ -192,6 +192,9 @@ function M.resolve_action(action)
     end
 
     local normalized = string.lower(action)
+    if normalized == "menu" or normalized == "help" or normalized == "ayuda" then
+        return "menu"
+    end
     if normalized == "on" or normalized == "encender" then
         return "on"
     end
@@ -208,6 +211,9 @@ function M.apply_action(cfg, action)
     local normalized = M.resolve_action(action)
     local relay_index = cfg.relay_index == 2 and 2 or 1
 
+    if normalized == "menu" then
+        return M.read_state(cfg), normalized
+    end
     if normalized == "on" then
         return M.write_state(cfg, relay_index, true), normalized
     end
@@ -218,6 +224,14 @@ function M.apply_action(cfg, action)
         return M.toggle_state(cfg, relay_index), normalized
     end
     return M.read_state(cfg), normalized
+end
+
+function M.format_relay_summary(states)
+    return string.format(
+        "Taller: %s | Patio: %s",
+        states.relay1 and "ON" or "OFF",
+        states.relay2 and "ON" or "OFF"
+    )
 end
 
 function M.format_status(cfg, states)
@@ -234,6 +248,47 @@ function M.format_status(cfg, states)
         cfg.i2c_sda,
         cfg.i2c_scl,
         cfg.oled_addr
+    )
+end
+
+function M.format_menu(cfg, states)
+    return table.concat({
+        "ESP-Claw Telegram",
+        M.format_relay_summary(states),
+        "",
+        "Panel con botones:",
+        "/panel",
+        "",
+        "Taller:",
+        "/relay on",
+        "/relay off",
+        "/relay toggle",
+        "/relay status",
+        "",
+        "Patio:",
+        "/relay2 on",
+        "/relay2 off",
+        "/relay2 toggle",
+        "/relay2 status",
+        "",
+        "Tambien podes usar:",
+        "encender luz taller",
+        "apagar luz taller",
+        "encender luz patio",
+        "apagar luz patio"
+    }, "\n")
+end
+
+function M.format_action_response(cfg, states, action)
+    if action == "menu" then
+        return M.format_menu(cfg, states)
+    end
+
+    return string.format(
+        "OK %s | %s | %s",
+        action,
+        M.format_relay_summary(states),
+        M.format_status(cfg, states)
     )
 end
 

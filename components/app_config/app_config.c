@@ -172,6 +172,21 @@ esp_err_t app_config_save(const app_config_t *config)
     return settings_store_commit();
 }
 
+esp_err_t app_config_clear_wifi_credentials(void)
+{
+    esp_err_t err = settings_store_set_string("wifi_ssid", "");
+    if (err != ESP_OK) {
+        return err;
+    }
+
+    err = settings_store_set_string("wifi_password", "");
+    if (err != ESP_OK) {
+        return err;
+    }
+
+    return settings_store_commit();
+}
+
 void app_config_to_claw(const app_config_t *config, app_claw_config_t *out)
 {
     if (!config || !out) {

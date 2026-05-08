@@ -31,6 +31,10 @@
 
 #define APP_FATFS_PARTITION_LABEL "storage"
 #define APP_ENABLE_MEM_LOG        (0)
+#define WIFI_RESET_BUTTON_GPIO    GPIO_NUM_0
+#define WIFI_RESET_HOLD_MS        6000
+#define WIFI_RESET_POLL_MS        50
+#define WIFI_RESET_TASK_STACK     4096
 
 static const char *TAG = "app";
 
@@ -41,6 +45,74 @@ static app_claw_storage_paths_t *s_claw_paths;
 static const char *app_fatfs_base_path = "/fatfs";
 
 static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
+
+static bool is_wifi_reset_button_pressed(void)
+{
+    return gpio_get_level(WIFI_RESET_BUTTON_GPIO) == 0;
+}
+
+static void wifi_reset_button_task(void *arg)
+{
+    (void)arg;
+#if CONFIG_ESP_BOARD_ESP32_S3_DEVKITC_1
+    bool was_pressed = false;
+    int held_ms = 0;
+    bool reset_in_progress = false;
+
+    while (1) {
+        if (reset_in_progress) {
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            continue;
+        }
+
+        bool pressed = is_wifi_reset_button_pressed();
+        if (pressed) {
+            held_ms += WIFI_RESET_POLL_MS;
+            if (!was_pressed) {
+                ESP_LOGW(TAG, "BOOT button pressed, hold for %d ms to clear Wi-Fi credentials",
+                         WIFI_RESET_HOLD_MS);
+            }
+            if (held_ms >= WIFI_RESET_HOLD_MS) {
+                reset_in_progress = true;
+                if (app_config_clear_wifi_credentials() == ESP_OK) {
+                    ESP_LOGW(TAG, "Wi-Fi credentials cleared via BOOT button; restarting into provisioning mode");
+                    esp_restart();
+                }
+                ESP_LOGE(TAG, "Failed to clear Wi-Fi credentials");
+                held_ms = 0;
+                reset_in_progress = false;
+            }
+        } else if (was_pressed) {
+            if (held_ms < WIFI_RESET_HOLD_MS) {
+                ESP_LOGI(TAG, "Wi-Fi reset canceled before hold timeout");
+            }
+            held_ms = 0;
+        }
+        was_pressed = pressed;
+        vTaskDelay(pdMS_TO_TICKS(WIFI_RESET_POLL_MS));
+    }
+#endif
+    vTaskDelete(NULL);
+}
+
+static esp_err_t init_wifi_reset_button(void)
+{
+#if CONFIG_ESP_BOARD_ESP32_S3_DEVKITC_1
+    const gpio_config_t cfg = {
+        .pin_bit_mask = 1ULL << WIFI_RESET_BUTTON_GPIO,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    ESP_RETURN_ON_ERROR(gpio_config(&cfg), TAG, "Failed to configure Wi-Fi reset button");
+
+    BaseType_t ok = xTaskCreate(wifi_reset_button_task, "wifi_reset_btn", WIFI_RESET_TASK_STACK, NULL, 4, NULL);
+    return ok == pdPASS ? ESP_OK : ESP_ERR_NO_MEM;
+#else
+    return ESP_OK;
+#endif
+}
 
 static esp_err_t init_relay_gpios_safe_state(void)
 {
@@ -121,13 +193,18 @@ static esp_err_t init_unused_gpios_safe_state(void)
 
 static void maybe_disable_provisioning_ap_on_sta_ready(void)
 {
+    wifi_manager_status_t status = {0};
+    wifi_manager_get_status(&status);
+    if (!status.ap_active) {
+        return;
+    }
+
     esp_err_t err = esp_wifi_set_mode(WIFI_MODE_STA);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "Failed to disable provisioning AP after STA connect: %s", esp_err_to_name(err));
         return;
     }
 
-    wifi_manager_status_t status = {0};
     wifi_manager_get_status(&status);
     ESP_LOGI(TAG, "Provisioning AP disabled after STA connect; mode=%s sta_ip=%s",
              status.mode[0] ? status.mode : "sta",
@@ -449,11 +526,13 @@ void app_main(void)
         ESP_LOGE(TAG, "Wi-Fi start failed: %s", esp_err_to_name(wifi_err));
     } else {
         ESP_ERROR_CHECK(http_server_start());
-        if (captive_dns_start(&(captive_dns_config_t) {
-                .ap_netif = wifi_manager_get_ap_netif(),
-                .configure_dhcp_dns = true,
-            }) != ESP_OK) {
-            ESP_LOGW(TAG, "Captive DNS could not start, portal pop-up disabled");
+        if (s_config->wifi_ssid[0] == '\0') {
+            if (captive_dns_start(&(captive_dns_config_t) {
+                    .ap_netif = wifi_manager_get_ap_netif(),
+                    .configure_dhcp_dns = true,
+                }) != ESP_OK) {
+                ESP_LOGW(TAG, "Captive DNS could not start, portal pop-up disabled");
+            }
         }
 
         if (s_config->wifi_ssid[0] != '\0') {
@@ -463,7 +542,7 @@ void app_main(void)
                 ESP_LOGI(TAG, "Wi-Fi STA ready: %s", status.sta_ip);
                 maybe_disable_provisioning_ap_on_sta_ready();
             } else {
-                ESP_LOGW(TAG, "STA could not connect, dropped to AP fallback");
+                ESP_LOGW(TAG, "STA could not connect during initial attempt, background retries will continue every 5 minutes");
             }
         }
 
@@ -485,6 +564,7 @@ void app_main(void)
 #if CONFIG_APP_CLAW_CAP_IM_LOCAL
     ESP_ERROR_CHECK(http_server_webim_bind_im());
 #endif
+    ESP_ERROR_CHECK(init_wifi_reset_button());
 
     register_wifi_command();
 
