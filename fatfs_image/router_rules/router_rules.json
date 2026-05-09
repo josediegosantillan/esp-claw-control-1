@@ -44,6 +44,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_panel",
     "description": "Show the Telegram inline button control panel for both relays.",
@@ -63,54 +64,34 @@
         "cap": "tg_send_message",
         "input": {
           "chat_id": "{{event.chat_id}}",
-          "message": "Panel ESP-Claw\nControles rapidos para taller y patio.",
+          "message": "🦞 *ESP-Claw* — Panel de control\nTaller = Relé 1   •   Patio = Relé 2",
+          "parse_mode": "Markdown",
           "reply_markup": {
             "inline_keyboard": [
               [
-                {
-                  "text": "Taller ON",
-                  "callback_data": "relay:on"
-                },
-                {
-                  "text": "Taller OFF",
-                  "callback_data": "relay:off"
-                }
+                { "text": "💡 Taller",           "callback_data": "noop"          }
               ],
               [
-                {
-                  "text": "Taller Toggle",
-                  "callback_data": "relay:toggle"
-                },
-                {
-                  "text": "Taller Estado",
-                  "callback_data": "relay:status"
-                }
+                { "text": "✅ Encender",          "callback_data": "relay:on"      },
+                { "text": "⛔ Apagar",            "callback_data": "relay:off"     }
               ],
               [
-                {
-                  "text": "Patio ON",
-                  "callback_data": "relay2:on"
-                },
-                {
-                  "text": "Patio OFF",
-                  "callback_data": "relay2:off"
-                }
+                { "text": "🔀 Alternar",          "callback_data": "relay:toggle"  },
+                { "text": "🔍 Estado",            "callback_data": "relay:status"  }
               ],
               [
-                {
-                  "text": "Patio Toggle",
-                  "callback_data": "relay2:toggle"
-                },
-                {
-                  "text": "Patio Estado",
-                  "callback_data": "relay2:status"
-                }
+                { "text": "🌿 Patio",             "callback_data": "noop"          }
               ],
               [
-                {
-                  "text": "Actualizar",
-                  "callback_data": "panel:refresh"
-                }
+                { "text": "✅ Encender",          "callback_data": "relay2:on"     },
+                { "text": "⛔ Apagar",            "callback_data": "relay2:off"    }
+              ],
+              [
+                { "text": "🔀 Alternar",          "callback_data": "relay2:toggle" },
+                { "text": "🔍 Estado",            "callback_data": "relay2:status" }
+              ],
+              [
+                { "text": "🔄 Actualizar panel",  "callback_data": "panel:refresh" }
               ]
             ]
           }
@@ -118,6 +99,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_menu",
     "description": "Show the Telegram command menu for relay control.",
@@ -159,6 +141,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_help",
     "description": "Show the Telegram help menu for relay control.",
@@ -200,6 +183,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_ayuda",
     "description": "Show the Telegram help menu in Spanish for relay control.",
@@ -241,6 +225,26 @@
       }
     ]
   },
+
+  {
+    "id": "telegram_callback_noop",
+    "description": "Ignore noop callbacks (section header buttons).",
+    "enabled": true,
+    "consume_on_match": true,
+    "ack": "telegram callback noop",
+    "match": {
+      "event_type": "callback_query",
+      "source_channel": "telegram",
+      "content_type": "text",
+      "text": "noop"
+    },
+    "actions": [
+      {
+        "type": "drop"
+      }
+    ]
+  },
+
   {
     "id": "telegram_callback_relay_on",
     "description": "Turn relay 1 on from a Telegram callback button.",
@@ -282,6 +286,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_callback_relay_off",
     "description": "Turn relay 1 off from a Telegram callback button.",
@@ -323,6 +328,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_callback_relay_toggle",
     "description": "Toggle relay 1 from a Telegram callback button.",
@@ -364,6 +370,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_callback_relay_status",
     "description": "Report relay 1 status from a Telegram callback button.",
@@ -405,6 +412,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_callback_relay2_on",
     "description": "Turn relay 2 on from a Telegram callback button.",
@@ -446,6 +454,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_callback_relay2_off",
     "description": "Turn relay 2 off from a Telegram callback button.",
@@ -487,6 +496,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_callback_relay2_toggle",
     "description": "Toggle relay 2 from a Telegram callback button.",
@@ -528,6 +538,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_callback_relay2_status",
     "description": "Report relay 2 status from a Telegram callback button.",
@@ -569,6 +580,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_callback_panel_refresh",
     "description": "Refresh the Telegram inline button control panel.",
@@ -587,54 +599,34 @@
         "cap": "tg_send_message",
         "input": {
           "chat_id": "{{event.chat_id}}",
-          "message": "Panel ESP-Claw\nControles rapidos para taller y patio.",
+          "message": "Panel de control\nTaller = Relé 1   •   Patio = Relé 2",
+          "parse_mode": "Markdown",
           "reply_markup": {
             "inline_keyboard": [
               [
-                {
-                  "text": "Taller ON",
-                  "callback_data": "relay:on"
-                },
-                {
-                  "text": "Taller OFF",
-                  "callback_data": "relay:off"
-                }
+                { "text": "💡 Taller",           "callback_data": "noop"          }
               ],
               [
-                {
-                  "text": "Taller Toggle",
-                  "callback_data": "relay:toggle"
-                },
-                {
-                  "text": "Taller Estado",
-                  "callback_data": "relay:status"
-                }
+                { "text": "✅ Encender",          "callback_data": "relay:on"      },
+                { "text": "⛔ Apagar",            "callback_data": "relay:off"     }
               ],
               [
-                {
-                  "text": "Patio ON",
-                  "callback_data": "relay2:on"
-                },
-                {
-                  "text": "Patio OFF",
-                  "callback_data": "relay2:off"
-                }
+                { "text": "🔀 Alternar",          "callback_data": "relay:toggle"  },
+                { "text": "🔍 Estado",            "callback_data": "relay:status"  }
               ],
               [
-                {
-                  "text": "Patio Toggle",
-                  "callback_data": "relay2:toggle"
-                },
-                {
-                  "text": "Patio Estado",
-                  "callback_data": "relay2:status"
-                }
+                { "text": "🌿 Patio",             "callback_data": "noop"          }
               ],
               [
-                {
-                  "text": "Actualizar",
-                  "callback_data": "panel:refresh"
-                }
+                { "text": "✅ Encender",          "callback_data": "relay2:on"     },
+                { "text": "⛔ Apagar",            "callback_data": "relay2:off"    }
+              ],
+              [
+                { "text": "🔀 Alternar",          "callback_data": "relay2:toggle" },
+                { "text": "🔍 Estado",            "callback_data": "relay2:status" }
+              ],
+              [
+                { "text": "🔄 Actualizar panel",  "callback_data": "panel:refresh" }
               ]
             ]
           }
@@ -642,9 +634,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_relay_on",
-    "description": "Turn the relay on from Telegram.",
+    "description": "Turn the relay on from Telegram text command.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram relay on",
@@ -684,9 +677,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_relay_off",
-    "description": "Turn the relay off from Telegram.",
+    "description": "Turn the relay off from Telegram text command.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram relay off",
@@ -726,9 +720,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_relay_toggle",
-    "description": "Toggle the relay from Telegram.",
+    "description": "Toggle the relay from Telegram text command.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram relay toggle",
@@ -768,9 +763,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_relay_status",
-    "description": "Report relay status from Telegram.",
+    "description": "Report relay status from Telegram text command.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram relay status",
@@ -809,9 +805,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_relay_encender",
-    "description": "Spanish alias to turn the relay on from Telegram.",
+    "description": "Spanish alias to turn relay 1 on from Telegram.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram relay encender",
@@ -851,9 +848,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_relay_apagar",
-    "description": "Spanish alias to turn the relay off from Telegram.",
+    "description": "Spanish alias to turn relay 1 off from Telegram.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram relay apagar",
@@ -893,9 +891,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_relay_estado",
-    "description": "Spanish alias to report relay status from Telegram.",
+    "description": "Spanish natural-language alias to report workshop light status.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram relay estado",
@@ -917,6 +916,7 @@
             "button_gpio": 5,
             "relay2_gpio": 6,
             "button2_gpio": 7,
+            "relay_index": 1,
             "i2c_port": 0,
             "i2c_sda": 8,
             "i2c_scl": 9,
@@ -934,6 +934,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_taller_light_on_lower",
     "description": "Spanish natural-language alias to turn the workshop light on.",
@@ -976,9 +977,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_taller_light_on_capitalized",
-    "description": "Spanish natural-language alias with capitalized first word to turn the workshop light on.",
+    "description": "Spanish natural-language alias with capital first word to turn the workshop light on.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram taller light on capitalized",
@@ -1018,6 +1020,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_taller_light_off_lower",
     "description": "Spanish natural-language alias to turn the workshop light off.",
@@ -1060,9 +1063,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_taller_light_off_capitalized",
-    "description": "Spanish natural-language alias with capitalized first word to turn the workshop light off.",
+    "description": "Spanish natural-language alias with capital first word to turn the workshop light off.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram taller light off capitalized",
@@ -1102,6 +1106,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_patio_light_on_lower",
     "description": "Spanish natural-language alias to turn the patio light on.",
@@ -1144,9 +1149,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_patio_light_on_capitalized",
-    "description": "Spanish natural-language alias with capitalized first word to turn the patio light on.",
+    "description": "Spanish natural-language alias with capital first word to turn the patio light on.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram patio light on capitalized",
@@ -1186,6 +1192,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_patio_light_off_lower",
     "description": "Spanish natural-language alias to turn the patio light off.",
@@ -1228,9 +1235,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_patio_light_off_capitalized",
-    "description": "Spanish natural-language alias with capitalized first word to turn the patio light off.",
+    "description": "Spanish natural-language alias with capital first word to turn the patio light off.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram patio light off capitalized",
@@ -1270,6 +1278,7 @@
       }
     ]
   },
+
   {
     "id": "telegram_patio_light_status",
     "description": "Spanish natural-language alias to report patio light status.",
@@ -1312,9 +1321,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_relay2_on",
-    "description": "Turn relay 2 on from Telegram.",
+    "description": "Turn relay 2 on from Telegram text command.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram relay2 on",
@@ -1354,9 +1364,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_relay2_off",
-    "description": "Turn relay 2 off from Telegram.",
+    "description": "Turn relay 2 off from Telegram text command.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram relay2 off",
@@ -1396,9 +1407,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_relay2_toggle",
-    "description": "Toggle relay 2 from Telegram.",
+    "description": "Toggle relay 2 from Telegram text command.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram relay2 toggle",
@@ -1438,9 +1450,10 @@
       }
     ]
   },
+
   {
     "id": "telegram_relay2_status",
-    "description": "Report relay 2 status from Telegram.",
+    "description": "Report relay 2 status from Telegram text command.",
     "enabled": true,
     "consume_on_match": true,
     "ack": "telegram relay2 status",
@@ -1480,6 +1493,7 @@
       }
     ]
   },
+
   {
     "id": "im_new_session",
     "description": "Start a fresh persistent chat session when the user sends /new.",
@@ -1508,6 +1522,7 @@
       }
     ]
   },
+
   {
     "id": "im_any_message_working_reply",
     "description": "Reply to any IM text message before other automation handling.",
@@ -1530,6 +1545,7 @@
       }
     ]
   },
+
   {
     "id": "im_attachment_saved_reply",
     "description": "Reply when an IM attachment is saved.",
@@ -1549,6 +1565,7 @@
       }
     ]
   },
+
   {
     "id": "im_any_message_agent",
     "description": "Route IM text messages to the agent.",
@@ -1570,6 +1587,7 @@
       }
     ]
   },
+
   {
     "id": "agent_stage_im_notify",
     "description": "Deliver agent stage progress messages to the original IM chat.",
@@ -1593,6 +1611,7 @@
       }
     ]
   },
+
   {
     "id": "agent_out_message_send_message",
     "description": "Deliver agent output messages to the original IM chat.",
