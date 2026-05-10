@@ -20,7 +20,9 @@
 #include "esp_wifi.h"
 #include "esp_board_manager_includes.h"
 #include "captive_dns.h"
+#include "cmd_espnow.h"
 #include "cmd_wifi.h"
+#include "espnow_link.h"
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -566,7 +568,15 @@ void app_main(void)
 #endif
     ESP_ERROR_CHECK(init_wifi_reset_button());
 
+    if (wifi_err == ESP_OK) {
+        esp_err_t espnow_err = espnow_link_start(0, false);
+        if (espnow_err != ESP_OK) {
+            ESP_LOGW(TAG, "ESP-NOW init skipped: %s", esp_err_to_name(espnow_err));
+        }
+    }
+
     register_wifi_command();
+    register_espnow_command();
 
 #if APP_ENABLE_MEM_LOG
     /* Start memory monitor: print internal free, min free, PSRAM free every 20s */

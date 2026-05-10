@@ -2,9 +2,11 @@ set(main_requires
     app_claw
     app_config
     captive_dns
+    cmd_espnow
     http_server
     wifi_manager
     cmd_wifi
+    espnow_link
 )
 
 if(CONFIG_APP_CLAW_CAP_IM_WECHAT)
