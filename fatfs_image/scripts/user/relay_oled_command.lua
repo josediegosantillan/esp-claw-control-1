@@ -4,6 +4,24 @@ local cfg = shared.load_config(args)
 local requested = type(args) == "table" and args.action or "status"
 local state, action = shared.apply_action(cfg, requested)
 
+local function read_porton_estimated_state()
+  local file = io.open("/fatfs/porton_state.txt", "r")
+  if not file then
+    return "DESCONOCIDO", "⚪"
+  end
+
+  local raw = file:read("*a")
+  file:close()
+  raw = type(raw) == "string" and string.lower((raw:gsub("%s+", ""))) or ""
+  if raw == "on" then
+    return "ENCENDIDA", "🟢"
+  end
+  if raw == "off" then
+    return "APAGADA", "⚫"
+  end
+  return "DESCONOCIDO", "⚪"
+end
+
 -- Panel inline keyboard (same markup used by /panel and after every action)
 local PANEL_MARKUP = {
   inline_keyboard = {
@@ -30,6 +48,17 @@ local PANEL_MARKUP = {
       { text = "🔍 Estado",       callback_data = "relay2:status" }
     },
     {
+      { text = "🚪 Luz porton",   callback_data = "noop" }
+    },
+    {
+      { text = "✅ Encender",     callback_data = "porton:on"     },
+      { text = "⛔ Apagar",       callback_data = "porton:off"    }
+    },
+    {
+      { text = "🔀 Alternar",     callback_data = "porton:toggle" },
+      { text = "🔍 Estado",       callback_data = "porton:status" }
+    },
+    {
       { text = "🔄 Actualizar panel", callback_data = "panel:refresh" }
     }
   }
@@ -44,7 +73,7 @@ local PANEL_ACTIONS = {
 if requested == "menu" then
   -- /menu: send a fresh panel message
   response = {
-    text = "🦞 *ESP-Claw* — Panel de control\nTaller = Relé 1   •   Patio = Relé 2",
+    text = "🦞 *ESP-Claw* — Panel de control\nTaller = Relé 1   •   Patio = Relé 2   •   Luz porton = ESP-NOW",
     reply_markup = PANEL_MARKUP
   }
 
@@ -57,11 +86,14 @@ elseif requested == "help" or requested == "ayuda" then
       "*/menu*   — igual que /panel",
       "*/relay on|off|toggle|status*",
       "*/relay2 on|off|toggle|status*",
+      "*/porton on|off|toggle|status*",
       "",
       "Lenguaje natural:",
       "  encender luz taller / apagar luz taller",
       "  encender luz patio  / apagar luz patio",
       "  Luz taller estado   / Luz patio estado",
+      "  encender luz porton / apagar luz porton",
+      "  Luz porton estado",
     }, "\n")
   }
 
@@ -69,6 +101,7 @@ elseif requested == "status" then
   -- Read both relay states from shared state
   local r1 = state and state.relay1
   local r2 = state and state.relay2
+  local porton_label, porton_icon = read_porton_estimated_state()
   local icon1 = r1 and "🟢" or "⚫"
   local icon2 = r2 and "🟢" or "⚫"
   local label1 = r1 and "ENCENDIDA" or "APAGADA"
@@ -80,6 +113,8 @@ elseif requested == "status" then
       "",
       icon1 .. " *Taller (R1):* " .. label1,
       icon2 .. " *Patio  (R2):* " .. label2,
+      porton_icon .. " *Luz porton:* " .. porton_label,
+      "_Porton: estado estimado segun ultimo comando enviado._",
     }, "\n"),
     reply_markup = PANEL_MARKUP
   }

@@ -22,6 +22,7 @@
 #include "captive_dns.h"
 #include "cmd_espnow.h"
 #include "cmd_wifi.h"
+#include "espnow_slave_control.h"
 #include "espnow_link.h"
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
@@ -574,6 +575,8 @@ void app_main(void)
             ESP_LOGW(TAG, "ESP-NOW init skipped: %s", esp_err_to_name(espnow_err));
         }
     }
+
+    ESP_ERROR_CHECK(espnow_slave_control_register_group());
 
     register_wifi_command();
     register_espnow_command();

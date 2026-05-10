@@ -1,20 +1,238 @@
 #include "espnow_link.h"
 
+#include <ctype.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "esp_check.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
+#include "freertos/task.h"
+#include "claw_event_publisher.h"
 #include "esp_log.h"
 #include "esp_mac.h"
 #include "esp_now.h"
 #include "esp_wifi.h"
 
 static const char *TAG = "espnow_link";
+static const char *PORTON_LAST_CHAT_PATH = "/fatfs/porton_last_chat.txt";
+
+#define ESPNOW_LINK_CONFIRM_QUEUE_LEN 4
+#define ESPNOW_LINK_CONFIRM_TEXT_LEN 32
+#define ESPNOW_LINK_CHAT_ID_LEN 32
+
+typedef struct {
+    uint8_t src_mac[6];
+    char text[ESPNOW_LINK_CONFIRM_TEXT_LEN];
+} espnow_link_confirm_event_t;
 
 static bool s_initialized;
 static uint8_t s_channel;
 static bool s_long_range;
+static QueueHandle_t s_confirm_queue;
+static TaskHandle_t s_confirm_task;
+
+static void trim_ascii(char *text)
+{
+    if (!text) {
+        return;
+    }
+
+    size_t len = strlen(text);
+    while (len > 0 && isspace((unsigned char)text[len - 1])) {
+        text[--len] = '\0';
+    }
+
+    size_t start = 0;
+    while (text[start] != '\0' && isspace((unsigned char)text[start])) {
+        start++;
+    }
+
+    if (start > 0) {
+        memmove(text, text + start, strlen(text + start) + 1);
+    }
+}
+
+static bool parse_mac_string(const char *text, uint8_t mac[6])
+{
+    if (!text || !mac) {
+        return false;
+    }
+
+    unsigned int values[6] = {0};
+    if (sscanf(text,
+               "%2x:%2x:%2x:%2x:%2x:%2x",
+               &values[0],
+               &values[1],
+               &values[2],
+               &values[3],
+               &values[4],
+               &values[5]) != 6) {
+        return false;
+    }
+
+    for (size_t i = 0; i < 6; i++) {
+        mac[i] = (uint8_t)values[i];
+    }
+
+    return true;
+}
+
+static bool parse_porton_confirm_text(const char *text, const char **state_label)
+{
+    if (!text || !state_label) {
+        return false;
+    }
+
+    if (strcmp(text, "ok relay=on") == 0) {
+        *state_label = "ENCENDIDA";
+        return true;
+    }
+
+    if (strcmp(text, "ok relay=off") == 0) {
+        *state_label = "APAGADA";
+        return true;
+    }
+
+    return false;
+}
+
+static const char *porton_confirm_event_key(const char *text)
+{
+    if (!text) {
+        return NULL;
+    }
+
+    if (strcmp(text, "ok relay=on") == 0) {
+        return "on";
+    }
+
+    if (strcmp(text, "ok relay=off") == 0) {
+        return "off";
+    }
+
+    return NULL;
+}
+
+static bool is_porton_confirm_payload(const uint8_t *data, size_t len)
+{
+    if (!data) {
+        return false;
+    }
+
+    return (len == strlen("ok relay=on") && memcmp(data, "ok relay=on", len) == 0) ||
+           (len == strlen("ok relay=off") && memcmp(data, "ok relay=off", len) == 0);
+}
+
+static esp_err_t load_porton_chat_route(char *chat_id, size_t chat_id_size, uint8_t peer_mac[6])
+{
+    if (!chat_id || chat_id_size == 0 || !peer_mac) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    FILE *file = fopen(PORTON_LAST_CHAT_PATH, "r");
+    if (!file) {
+        return ESP_ERR_NOT_FOUND;
+    }
+
+    char chat_line[ESPNOW_LINK_CHAT_ID_LEN] = {0};
+    char mac_line[32] = {0};
+
+    char *chat_ok = fgets(chat_line, sizeof(chat_line), file);
+    char *mac_ok = fgets(mac_line, sizeof(mac_line), file);
+    fclose(file);
+
+    if (!chat_ok || !mac_ok) {
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+
+    trim_ascii(chat_line);
+    trim_ascii(mac_line);
+
+    if (chat_line[0] == '\0' || !parse_mac_string(mac_line, peer_mac)) {
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+
+    snprintf(chat_id, chat_id_size, "%s", chat_line);
+    return ESP_OK;
+}
+
+static void espnow_link_confirm_task_fn(void *arg)
+{
+    (void)arg;
+
+    espnow_link_confirm_event_t event = {0};
+    for (;;) {
+        if (xQueueReceive(s_confirm_queue, &event, portMAX_DELAY) != pdTRUE) {
+            continue;
+        }
+
+        const char *state_label = NULL;
+        const char *event_key = NULL;
+        if (!parse_porton_confirm_text(event.text, &state_label)) {
+            continue;
+        }
+        event_key = porton_confirm_event_key(event.text);
+        if (!event_key) {
+            continue;
+        }
+
+        char chat_id[ESPNOW_LINK_CHAT_ID_LEN] = {0};
+        uint8_t expected_mac[6] = {0};
+        esp_err_t route_err = load_porton_chat_route(chat_id, sizeof(chat_id), expected_mac);
+        if (route_err != ESP_OK) {
+            ESP_LOGD(TAG, "porton confirm ignored: chat route unavailable (%s)", esp_err_to_name(route_err));
+            continue;
+        }
+
+        if (memcmp(expected_mac, event.src_mac, sizeof(expected_mac)) != 0) {
+            ESP_LOGD(TAG, "porton confirm ignored: unexpected peer " MACSTR, MAC2STR(event.src_mac));
+            continue;
+        }
+
+        char payload[128] = {0};
+        snprintf(payload,
+                 sizeof(payload),
+                 "{\"chat_id\":\"%s\",\"state\":\"%s\"}",
+                 chat_id,
+                 state_label);
+        esp_err_t send_err = claw_event_router_publish_trigger("espnow_link",
+                                                               "espnow_porton_confirm",
+                                                               event_key,
+                                                               payload);
+        if (send_err == ESP_OK) {
+            ESP_LOGI(TAG, "porton confirm published chat=%s peer=" MACSTR " state=%s",
+                     chat_id, MAC2STR(event.src_mac), state_label);
+        } else {
+            ESP_LOGW(TAG, "porton confirm publish failed chat=%s: %s", chat_id, esp_err_to_name(send_err));
+        }
+    }
+}
+
+static esp_err_t ensure_confirm_task(void)
+{
+    if (s_confirm_queue && s_confirm_task) {
+        return ESP_OK;
+    }
+
+    s_confirm_queue = xQueueCreate(ESPNOW_LINK_CONFIRM_QUEUE_LEN, sizeof(espnow_link_confirm_event_t));
+    ESP_RETURN_ON_FALSE(s_confirm_queue != NULL, ESP_ERR_NO_MEM, TAG, "confirm queue alloc failed");
+
+    BaseType_t task_ok = xTaskCreate(espnow_link_confirm_task_fn,
+                                     "espnow_confirm",
+                                     4096,
+                                     NULL,
+                                     5,
+                                     &s_confirm_task);
+    if (task_ok != pdPASS) {
+        vQueueDelete(s_confirm_queue);
+        s_confirm_queue = NULL;
+        return ESP_ERR_NO_MEM;
+    }
+
+    return ESP_OK;
+}
 
 static void espnow_link_send_cb(const esp_now_send_info_t *tx_info, esp_now_send_status_t status)
 {
@@ -42,6 +260,28 @@ static void espnow_link_recv_cb(const esp_now_recv_info_t *recv_info, const uint
              rssi,
              data_len,
              (const char *)data);
+
+    if (!s_confirm_queue) {
+        return;
+    }
+
+    if (!is_porton_confirm_payload(data, (size_t)data_len)) {
+        return;
+    }
+
+    espnow_link_confirm_event_t event = {0};
+    memcpy(event.src_mac, recv_info->src_addr, sizeof(event.src_mac));
+
+    size_t copy_len = (size_t)data_len;
+    if (copy_len >= sizeof(event.text)) {
+        copy_len = sizeof(event.text) - 1;
+    }
+    memcpy(event.text, data, copy_len);
+    event.text[copy_len] = '\0';
+
+    if (xQueueSend(s_confirm_queue, &event, 0) != pdTRUE) {
+        ESP_LOGW(TAG, "confirm queue full, dropping rx peer=" MACSTR, MAC2STR(recv_info->src_addr));
+    }
 }
 
 esp_err_t espnow_link_init(void)
@@ -53,6 +293,7 @@ esp_err_t espnow_link_init(void)
     ESP_RETURN_ON_ERROR(esp_now_init(), TAG, "esp_now_init failed");
     ESP_RETURN_ON_ERROR(esp_now_register_send_cb(espnow_link_send_cb), TAG, "register send cb failed");
     ESP_RETURN_ON_ERROR(esp_now_register_recv_cb(espnow_link_recv_cb), TAG, "register recv cb failed");
+    ESP_RETURN_ON_ERROR(ensure_confirm_task(), TAG, "confirm task init failed");
 
     uint32_t version = 0;
     esp_err_t version_err = esp_now_get_version(&version);

@@ -2,6 +2,7 @@ local M = {}
 
 local gpio = require("gpio")
 local STATE_PATH = "/fatfs/relay_state.txt"
+local PORTON_STATE_PATH = "/fatfs/porton_state.txt"
 
 local function int_default(value, default_value)
     if type(value) == "number" then
@@ -111,6 +112,21 @@ local function write_persisted_states(states)
         states.relay2 and 1 or 0
     ))
     file:close()
+end
+
+local function read_porton_estimated_state()
+    local file = io.open(PORTON_STATE_PATH, "r")
+    if not file then
+        return "unknown"
+    end
+
+    local raw = file:read("*a")
+    file:close()
+    raw = type(raw) == "string" and string.lower((raw:gsub("%s+", ""))) or ""
+    if raw == "on" or raw == "off" then
+        return raw
+    end
+    return "unknown"
 end
 
 local function ensure_relay_output(relay_cfg)
@@ -227,10 +243,12 @@ function M.apply_action(cfg, action)
 end
 
 function M.format_relay_summary(states)
+    local porton = read_porton_estimated_state()
     return string.format(
-        "Taller: %s | Patio: %s",
+        "Taller: %s | Patio: %s | Porton: %s",
         states.relay1 and "ON" or "OFF",
-        states.relay2 and "ON" or "OFF"
+        states.relay2 and "ON" or "OFF",
+        porton == "on" and "ON" or (porton == "off" and "OFF" or "?")
     )
 end
 
@@ -271,11 +289,19 @@ function M.format_menu(cfg, states)
         "/relay2 toggle alternar",
         "/relay2 status estado",
         "",
+        "Luz porton:",
+        "/porton on     encender",
+        "/porton off    apagar",
+        "/porton toggle alternar",
+        "/porton status estado",
+        "",
         "Frases rapidas:",
         "encender luz taller",
         "apagar luz taller",
         "encender luz patio",
-        "apagar luz patio"
+        "apagar luz patio",
+        "encender luz porton",
+        "apagar luz porton"
     }, "\n")
 end
 

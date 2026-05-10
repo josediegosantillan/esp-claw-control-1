@@ -6,6 +6,8 @@ Este proyecto incluye una base para controlar dos reles con:
 - pantalla OLED SSD1306 I2C de 0.96"
 - comandos por Telegram
 
+Ademas, el panel de Telegram puede controlar una `luz porton` remota por `ESP-NOW` hacia un ESP32 esclavo.
+
 ## Pines por defecto
 
 - Rele 1: `GPIO4`
@@ -80,8 +82,17 @@ Las reglas agregadas escuchan en canal `telegram`:
 - `/relay encender`
 - `/relay apagar`
 - `/relay estado`
+- `/porton on`
+- `/porton off`
+- `/porton toggle`
+- `/porton status`
 
 Tambien hay alias de lenguaje natural ya cargados para luz de taller y luz de patio.
+Tambien hay alias para:
+
+- `encender luz porton`
+- `apagar luz porton`
+- `Luz porton estado`
 
 ## Arranque automatico
 
@@ -116,6 +127,8 @@ Puntos importantes:
 - `write_state()` actualiza el archivo y luego aplica el nivel correcto en GPIO
 - `toggle_state()` conmuta segun el estado persistido compartido
 - botones y Telegram usan la misma fuente de verdad
+- `luz porton` no usa GPIO local; envia payloads `ESP-NOW` al esclavo y guarda un estado estimado en `/fatfs/porton_state.txt`
+- cuando el esclavo responde `ok relay=on` o `ok relay=off`, el maestro reenvia esa confirmacion al ultimo chat de Telegram que emitio el comando, usando `/fatfs/porton_last_chat.txt`
 
 Consecuencia operativa:
 

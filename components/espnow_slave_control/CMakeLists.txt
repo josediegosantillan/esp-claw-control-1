@@ -1,9 +1,10 @@
 idf_component_register(
     SRCS
-        "espnow_link.c"
+        "espnow_slave_control.c"
     INCLUDE_DIRS
         "include"
     REQUIRES
-        esp_wifi
-        claw_event_router
+        claw_cap
+        espnow_link
+        json
 )

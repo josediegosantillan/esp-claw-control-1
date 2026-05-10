@@ -3,6 +3,7 @@ set(main_requires
     app_config
     captive_dns
     cmd_espnow
+    espnow_slave_control
     http_server
     wifi_manager
     cmd_wifi
