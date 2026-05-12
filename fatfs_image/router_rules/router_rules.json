@@ -1,2203 +1,2319 @@
 [
     {
-        "id":  "relay_oled_service_startup",
-        "description":  "Start the relay/button/OLED background service after boot.",
-        "enabled":  true,
-        "consume_on_match":  false,
-        "ack":  "relay oled service startup",
-        "match":  {
-                      "event_type":  "startup",
-                      "event_key":  "boot_completed"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_service.lua",
-                                          "async":  true,
-                                          "name":  "relay_oled_service",
-                                          "exclusive":  "relay_oled_service",
-                                          "replace":  true,
-                                          "args":  {
-                                                       "relay_gpio":  4,
-                                                       "relay_active_level":  1,
-                                                       "button_gpio":  5,
-                                                       "button_active_level":  0,
-                                                       "relay2_gpio":  6,
-                                                       "relay2_active_level":  0,
-                                                       "button2_gpio":  7,
-                                                       "button2_active_level":  0,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "i2c_freq_hz":  400000,
-                                                       "oled_addr":  60,
-                                                       "oled_width":  128,
-                                                       "oled_height":  64,
-                                                       "enable_oled":  true,
-                                                       "default_on":  false,
-                                                       "default_on2":  false,
-                                                       "poll_ms":  50,
-                                                       "status_refresh_ms":  1000
-                                                   }
-                                      }
-                        }
-                    ]
+        "id": "relay_oled_service_startup",
+        "description": "Start the relay/button/OLED background service after boot.",
+        "enabled": true,
+        "consume_on_match": false,
+        "ack": "relay oled service startup",
+        "match": {
+            "event_type": "startup",
+            "event_key": "boot_completed"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_service.lua",
+                    "async": true,
+                    "name": "relay_oled_service",
+                    "exclusive": "relay_oled_service",
+                    "replace": true,
+                    "args": {
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "button_active_level": 0,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "button2_active_level": 0,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "i2c_freq_hz": 400000,
+                        "oled_addr": 60,
+                        "oled_width": 128,
+                        "oled_height": 64,
+                        "enable_oled": true,
+                        "default_on": false,
+                        "default_on2": false,
+                        "poll_ms": 50,
+                        "status_refresh_ms": 1000
+                    }
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_panel",
-        "description":  "Show the Telegram inline button control panel for both relays.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram panel",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/panel"
-                  },
-        "actions":  [
-                        {
-                            "type":  "call_cap",
-                            "cap":  "tg_send_message",
-                            "input":  {
-                                          "chat_id":  "{{event.chat_id}}",
-                                          "message":  "Panel de control\nTaller = Rele 1   -   Patio = Rele 2   -   Luz porton = ESP-NOW",
-                                          "parse_mode":  "Markdown",
-                                          "reply_markup":  {
-                                                               "inline_keyboard":  [
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Taller",
-                                                                                               "callback_data":  "noop"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Encender",
-                                                                                               "callback_data":  "relay:on"
-                                                                                           },
-                                                                                           {
-                                                                                               "text":  "Apagar",
-                                                                                               "callback_data":  "relay:off"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Alternar",
-                                                                                               "callback_data":  "relay:toggle"
-                                                                                           },
-                                                                                           {
-                                                                                               "text":  "Estado",
-                                                                                               "callback_data":  "relay:status"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Patio",
-                                                                                               "callback_data":  "noop"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Encender",
-                                                                                               "callback_data":  "relay2:on"
-                                                                                           },
-                                                                                           {
-                                                                                               "text":  "Apagar",
-                                                                                               "callback_data":  "relay2:off"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Alternar",
-                                                                                               "callback_data":  "relay2:toggle"
-                                                                                           },
-                                                                                           {
-                                                                                               "text":  "Estado",
-                                                                                               "callback_data":  "relay2:status"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Luz porton",
-                                                                                               "callback_data":  "noop"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Encender",
-                                                                                               "callback_data":  "porton:on"
-                                                                                           },
-                                                                                           {
-                                                                                               "text":  "Apagar",
-                                                                                               "callback_data":  "porton:off"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Alternar",
-                                                                                               "callback_data":  "porton:toggle"
-                                                                                           },
-                                                                                           {
-                                                                                               "text":  "Estado",
-                                                                                               "callback_data":  "porton:status"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Actualizar panel",
-                                                                                               "callback_data":  "panel:refresh"
-                                                                                           }
-                                                                                       ]
-                                                                                   ]
-                                                           }
-                                      }
-                        }
-                    ]
+        "id": "telegram_panel",
+        "description": "Show the Telegram inline button control panel for both relays.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram panel",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/panel"
+        },
+        "actions": [
+            {
+                "type": "call_cap",
+                "cap": "tg_send_message",
+                "input": {
+                    "chat_id": "{{event.chat_id}}",
+                    "message": "🦞 *ESP-Claw* — Panel de control\nTaller = Relé 1   •   Patio = Relé 2   •   Luz portón = ESP-NOW",
+                    "parse_mode": "Markdown",
+                    "reply_markup": {
+                        "inline_keyboard": [
+                            [
+                                {
+                                    "text": "💡 Taller",
+                                    "callback_data": "noop"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "✅ Encender",
+                                    "callback_data": "relay:on"
+                                },
+                                {
+                                    "text": "⛔ Apagar",
+                                    "callback_data": "relay:off"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "🌿 Patio",
+                                    "callback_data": "noop"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "✅ Encender",
+                                    "callback_data": "relay2:on"
+                                },
+                                {
+                                    "text": "⛔ Apagar",
+                                    "callback_data": "relay2:off"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "🚪 Luz portón",
+                                    "callback_data": "noop"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "✅ Encender",
+                                    "callback_data": "porton:on"
+                                },
+                                {
+                                    "text": "⛔ Apagar",
+                                    "callback_data": "porton:off"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "📊 Estado general",
+                                    "callback_data": "status:all"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "🔄 Actualizar panel",
+                                    "callback_data": "panel:refresh"
+                                }
+                            ]
+                        ]
+                    }
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_menu",
-        "description":  "Show the Telegram command menu for relay control.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram menu",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/menu"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "menu",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_menu",
+        "description": "Show the Telegram command menu for relay control.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram menu",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/menu"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "menu",
+                        "relay_gpio": 4,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "button2_gpio": 7,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_help",
-        "description":  "Show the Telegram help menu for relay control.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram help",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/help"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "help",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_help",
+        "description": "Show the Telegram help menu for relay control.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram help",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/help"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "help",
+                        "relay_gpio": 4,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "button2_gpio": 7,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_ayuda",
-        "description":  "Show the Telegram help menu in Spanish for relay control.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram ayuda",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/ayuda"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "ayuda",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_ayuda",
+        "description": "Show the Telegram help menu in Spanish for relay control.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram ayuda",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/ayuda"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "ayuda",
+                        "relay_gpio": 4,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "button2_gpio": 7,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_noop",
-        "description":  "Ignore noop callbacks (section header buttons).",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback noop",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "noop"
-                  },
-        "actions":  [
-                        {
-                            "type":  "drop"
-                        }
-                    ]
+        "id": "telegram_callback_noop",
+        "description": "Ignore noop callbacks (section header buttons).",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram callback noop",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "noop"
+        },
+        "actions": [
+            {
+                "type": "drop"
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_relay_on",
-        "description":  "Turn relay 1 on from a Telegram callback button.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback relay on",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "relay:on"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "on",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_relay_on",
+        "description": "Turn relay 1 on from a Telegram callback button.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram callback relay on",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "relay:on"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "on",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_relay_off",
-        "description":  "Turn relay 1 off from a Telegram callback button.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback relay off",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "relay:off"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "off",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_relay_off",
+        "description": "Turn relay 1 off from a Telegram callback button.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram callback relay off",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "relay:off"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "off",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_relay_toggle",
-        "description":  "Toggle relay 1 from a Telegram callback button.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback relay toggle",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "relay:toggle"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "toggle",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_relay_toggle",
+        "description": "Toggle relay 1 from a Telegram callback button.",
+        "enabled": false,
+        "consume_on_match": true,
+        "ack": "telegram callback relay toggle",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "relay:toggle"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "toggle",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_relay_status",
-        "description":  "Report relay 1 status from a Telegram callback button.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback relay status",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "relay:status"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "status",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_relay_status",
+        "description": "Report relay 1 status from a Telegram callback button. (Botón eliminado del panel — conservada para texto directo)",
+        "enabled": false,
+        "consume_on_match": true,
+        "ack": "telegram callback relay status",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "relay:status"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "status",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_relay2_on",
-        "description":  "Turn relay 2 on from a Telegram callback button.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback relay2 on",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "relay2:on"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "on",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_relay2_on",
+        "description": "Turn relay 2 on from a Telegram callback button.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram callback relay2 on",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "relay2:on"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "on",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_relay2_off",
-        "description":  "Turn relay 2 off from a Telegram callback button.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback relay2 off",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "relay2:off"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "off",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_relay2_off",
+        "description": "Turn relay 2 off from a Telegram callback button.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram callback relay2 off",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "relay2:off"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "off",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_relay2_toggle",
-        "description":  "Toggle relay 2 from a Telegram callback button.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback relay2 toggle",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "relay2:toggle"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "toggle",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_relay2_toggle",
+        "description": "Toggle relay 2 from a Telegram callback button.",
+        "enabled": false,
+        "consume_on_match": true,
+        "ack": "telegram callback relay2 toggle",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "relay2:toggle"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "toggle",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_relay2_status",
-        "description":  "Report relay 2 status from a Telegram callback button.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback relay2 status",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "relay2:status"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "status",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_relay2_status",
+        "description": "Report relay 2 status from a Telegram callback button. (Botón eliminado del panel — conservada para texto directo)",
+        "enabled": false,
+        "consume_on_match": true,
+        "ack": "telegram callback relay2 status",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "relay2:status"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "status",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_panel_refresh",
-        "description":  "Refresh the Telegram inline button control panel.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback panel refresh",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "panel:refresh"
-                  },
-        "actions":  [
-                        {
-                            "type":  "call_cap",
-                            "cap":  "tg_send_message",
-                            "input":  {
-                                          "chat_id":  "{{event.chat_id}}",
-                                          "message":  "Panel de control\nTaller = Rele 1   -   Patio = Rele 2   -   Luz porton = ESP-NOW",
-                                          "parse_mode":  "Markdown",
-                                          "reply_markup":  {
-                                                               "inline_keyboard":  [
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Taller",
-                                                                                               "callback_data":  "noop"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Encender",
-                                                                                               "callback_data":  "relay:on"
-                                                                                           },
-                                                                                           {
-                                                                                               "text":  "Apagar",
-                                                                                               "callback_data":  "relay:off"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Alternar",
-                                                                                               "callback_data":  "relay:toggle"
-                                                                                           },
-                                                                                           {
-                                                                                               "text":  "Estado",
-                                                                                               "callback_data":  "relay:status"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Patio",
-                                                                                               "callback_data":  "noop"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Encender",
-                                                                                               "callback_data":  "relay2:on"
-                                                                                           },
-                                                                                           {
-                                                                                               "text":  "Apagar",
-                                                                                               "callback_data":  "relay2:off"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Alternar",
-                                                                                               "callback_data":  "relay2:toggle"
-                                                                                           },
-                                                                                           {
-                                                                                               "text":  "Estado",
-                                                                                               "callback_data":  "relay2:status"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Luz porton",
-                                                                                               "callback_data":  "noop"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Encender",
-                                                                                               "callback_data":  "porton:on"
-                                                                                           },
-                                                                                           {
-                                                                                               "text":  "Apagar",
-                                                                                               "callback_data":  "porton:off"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Alternar",
-                                                                                               "callback_data":  "porton:toggle"
-                                                                                           },
-                                                                                           {
-                                                                                               "text":  "Estado",
-                                                                                               "callback_data":  "porton:status"
-                                                                                           }
-                                                                                       ],
-                                                                                       [
-                                                                                           {
-                                                                                               "text":  "Actualizar panel",
-                                                                                               "callback_data":  "panel:refresh"
-                                                                                           }
-                                                                                       ]
-                                                                                   ]
-                                                           }
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_status_all",
+        "description": "Show full status of all relays from a Telegram callback button.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram callback status all",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "status:all"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "status:all",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_relay_on",
-        "description":  "Turn the relay on from Telegram text command.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram relay on",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/relay on"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "on",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "description": "Refresh the Telegram inline button control panel.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram callback panel refresh",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "panel:refresh"
+        },
+        "actions": [
+            {
+                "type": "call_cap",
+                "cap": "tg_send_message",
+                "input": {
+                    "chat_id": "{{event.chat_id}}",
+                    "message": "🦞 *ESP-Claw* — Panel de control\nTaller = Relé 1   •   Patio = Relé 2   •   Luz portón = ESP-NOW",
+                    "parse_mode": "Markdown",
+                    "reply_markup": {
+                        "inline_keyboard": [
+                            [
+                                {
+                                    "text": "💡 Taller",
+                                    "callback_data": "noop"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "✅ Encender",
+                                    "callback_data": "relay:on"
+                                },
+                                {
+                                    "text": "⛔ Apagar",
+                                    "callback_data": "relay:off"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "🌿 Patio",
+                                    "callback_data": "noop"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "✅ Encender",
+                                    "callback_data": "relay2:on"
+                                },
+                                {
+                                    "text": "⛔ Apagar",
+                                    "callback_data": "relay2:off"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "🚪 Luz portón",
+                                    "callback_data": "noop"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "✅ Encender",
+                                    "callback_data": "porton:on"
+                                },
+                                {
+                                    "text": "⛔ Apagar",
+                                    "callback_data": "porton:off"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "📊 Estado general",
+                                    "callback_data": "status:all"
+                                }
+                            ],
+                            [
+                                {
+                                    "text": "🔄 Actualizar panel",
+                                    "callback_data": "panel:refresh"
+                                }
+                            ]
+                        ]
+                    }
+                }
+            }
+        ],
+        "id": "telegram_callback_panel_refresh"
     },
     {
-        "id":  "telegram_relay_off",
-        "description":  "Turn the relay off from Telegram text command.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram relay off",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/relay off"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "off",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_relay_on",
+        "description": "Turn the relay on from Telegram text command.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram relay on",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/relay on"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "on",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_relay_toggle",
-        "description":  "Toggle the relay from Telegram text command.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram relay toggle",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/relay toggle"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "toggle",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_relay_off",
+        "description": "Turn the relay off from Telegram text command.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram relay off",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/relay off"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "off",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_relay_status",
-        "description":  "Report relay status from Telegram text command.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram relay status",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/relay status"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "status",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_relay_toggle",
+        "description": "Toggle the relay from Telegram text command.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram relay toggle",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/relay toggle"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "toggle",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_relay_encender",
-        "description":  "Spanish alias to turn relay 1 on from Telegram.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram relay encender",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/relay encender"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "encender",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_relay_status",
+        "description": "Report relay status from Telegram text command.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram relay status",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/relay status"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "status",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_relay_apagar",
-        "description":  "Spanish alias to turn relay 1 off from Telegram.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram relay apagar",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/relay apagar"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "apagar",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_relay_encender",
+        "description": "Spanish alias to turn relay 1 on from Telegram.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram relay encender",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/relay encender"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "encender",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_relay_estado",
-        "description":  "Spanish natural-language alias to report workshop light status.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram relay estado",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "Luz taller estado"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "status",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_relay_apagar",
+        "description": "Spanish alias to turn relay 1 off from Telegram.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram relay apagar",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/relay apagar"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "apagar",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_taller_light_on_lower",
-        "description":  "Spanish natural-language alias to turn the workshop light on.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram taller light on lower",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "encender luz taller"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "on",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_relay_estado",
+        "description": "Spanish natural-language alias to report workshop light status.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram relay estado",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "Luz taller estado"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "status",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_taller_light_on_capitalized",
-        "description":  "Spanish natural-language alias with capital first word to turn the workshop light on.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram taller light on capitalized",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "Encender luz taller"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "on",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_taller_light_on_lower",
+        "description": "Spanish natural-language alias to turn the workshop light on.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram taller light on lower",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "encender luz taller"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "on",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_taller_light_off_lower",
-        "description":  "Spanish natural-language alias to turn the workshop light off.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram taller light off lower",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "apagar luz taller"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "off",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_taller_light_on_capitalized",
+        "description": "Spanish natural-language alias with capital first word to turn the workshop light on.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram taller light on capitalized",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "Encender luz taller"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "on",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_taller_light_off_capitalized",
-        "description":  "Spanish natural-language alias with capital first word to turn the workshop light off.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram taller light off capitalized",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "Apagar luz taller"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "off",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  1,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_taller_light_off_lower",
+        "description": "Spanish natural-language alias to turn the workshop light off.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram taller light off lower",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "apagar luz taller"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "off",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_patio_light_on_lower",
-        "description":  "Spanish natural-language alias to turn the patio light on.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram patio light on lower",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "encender luz patio"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "on",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_taller_light_off_capitalized",
+        "description": "Spanish natural-language alias with capital first word to turn the workshop light off.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram taller light off capitalized",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "Apagar luz taller"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "off",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 1,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_patio_light_on_capitalized",
-        "description":  "Spanish natural-language alias with capital first word to turn the patio light on.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram patio light on capitalized",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "Encender luz patio"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "on",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_patio_light_on_lower",
+        "description": "Spanish natural-language alias to turn the patio light on.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram patio light on lower",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "encender luz patio"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "on",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_patio_light_off_lower",
-        "description":  "Spanish natural-language alias to turn the patio light off.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram patio light off lower",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "apagar luz patio"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "off",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_patio_light_on_capitalized",
+        "description": "Spanish natural-language alias with capital first word to turn the patio light on.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram patio light on capitalized",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "Encender luz patio"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "on",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_patio_light_off_capitalized",
-        "description":  "Spanish natural-language alias with capital first word to turn the patio light off.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram patio light off capitalized",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "Apagar luz patio"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "off",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_patio_light_off_lower",
+        "description": "Spanish natural-language alias to turn the patio light off.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram patio light off lower",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "apagar luz patio"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "off",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_patio_light_status",
-        "description":  "Spanish natural-language alias to report patio light status.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram patio light status",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "Luz patio estado"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "status",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_patio_light_off_capitalized",
+        "description": "Spanish natural-language alias with capital first word to turn the patio light off.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram patio light off capitalized",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "Apagar luz patio"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "off",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_relay2_on",
-        "description":  "Turn relay 2 on from Telegram text command.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram relay2 on",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/relay2 on"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "on",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_patio_light_status",
+        "description": "Spanish natural-language alias to report patio light status.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram patio light status",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "Luz patio estado"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "status",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_relay2_off",
-        "description":  "Turn relay 2 off from Telegram text command.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram relay2 off",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/relay2 off"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "off",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_relay2_on",
+        "description": "Turn relay 2 on from Telegram text command.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram relay2 on",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/relay2 on"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "on",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_relay2_toggle",
-        "description":  "Toggle relay 2 from Telegram text command.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram relay2 toggle",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/relay2 toggle"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "toggle",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_relay2_off",
+        "description": "Turn relay 2 off from Telegram text command.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram relay2 off",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/relay2 off"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "off",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_relay2_status",
-        "description":  "Report relay 2 status from Telegram text command.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram relay2 status",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/relay2 status"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/relay_oled_command.lua",
-                                          "args":  {
-                                                       "action":  "status",
-                                                       "relay_gpio":  4,
-                                                       "button_gpio":  5,
-                                                       "relay2_gpio":  6,
-                                                       "button2_gpio":  7,
-                                                       "relay_index":  2,
-                                                       "i2c_port":  0,
-                                                       "i2c_sda":  8,
-                                                       "i2c_scl":  9,
-                                                       "oled_addr":  60,
-                                                       "enable_oled":  true
-                                                   }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_relay2_toggle",
+        "description": "Toggle relay 2 from Telegram text command.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram relay2 toggle",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/relay2 toggle"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "toggle",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_porton_on",
-        "description":  "Turn luz porton on from a Telegram callback button.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback porton on",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "porton:on"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "on",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_relay2_status",
+        "description": "Report relay 2 status from Telegram text command.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram relay2 status",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/relay2 status"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/relay_oled_command.lua",
+                    "args": {
+                        "action": "status",
+                        "relay_gpio": 4,
+                        "relay_active_level": 1,
+                        "button_gpio": 5,
+                        "relay2_gpio": 6,
+                        "relay2_active_level": 0,
+                        "button2_gpio": 7,
+                        "relay_index": 2,
+                        "i2c_port": 0,
+                        "i2c_sda": 8,
+                        "i2c_scl": 9,
+                        "oled_addr": 60,
+                        "enable_oled": true
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_porton_off",
-        "description":  "Turn luz porton off from a Telegram callback button.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback porton off",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "porton:off"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "off",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_porton_on",
+        "description": "Turn luz porton on from a Telegram callback button.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram callback porton on",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "porton:on"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "on",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_porton_toggle",
-        "description":  "Toggle luz porton from a Telegram callback button.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback porton toggle",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "porton:toggle"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "toggle",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_porton_off",
+        "description": "Turn luz porton off from a Telegram callback button.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram callback porton off",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "porton:off"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "off",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_callback_porton_status",
-        "description":  "Report luz porton status from a Telegram callback button.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram callback porton status",
-        "match":  {
-                      "event_type":  "callback_query",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "porton:status"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "status",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_porton_toggle",
+        "description": "Toggle luz porton from a Telegram callback button.",
+        "enabled": false,
+        "consume_on_match": true,
+        "ack": "telegram callback porton toggle",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "porton:toggle"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "toggle",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_porton_on",
-        "description":  "Turn luz porton on from Telegram text command.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram porton on",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/porton on"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "on",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_callback_porton_status",
+        "description": "Report luz porton status from a Telegram callback button. (Botón eliminado del panel — conservada para texto directo)",
+        "enabled": false,
+        "consume_on_match": true,
+        "ack": "telegram callback porton status",
+        "match": {
+            "event_type": "callback_query",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "porton:status"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "status",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_porton_off",
-        "description":  "Turn luz porton off from Telegram text command.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram porton off",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/porton off"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "off",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_porton_on",
+        "description": "Turn luz porton on from Telegram text command.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram porton on",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/porton on"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "on",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_porton_toggle",
-        "description":  "Toggle luz porton from Telegram text command.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram porton toggle",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/porton toggle"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "toggle",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_porton_off",
+        "description": "Turn luz porton off from Telegram text command.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram porton off",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/porton off"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "off",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_porton_status",
-        "description":  "Report luz porton status from Telegram text command.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram porton status",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "/porton status"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "status",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_porton_toggle",
+        "description": "Toggle luz porton from Telegram text command.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram porton toggle",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/porton toggle"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "toggle",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_porton_light_on_lower",
-        "description":  "Spanish natural-language alias to turn luz porton on.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram porton light on lower",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "encender luz porton"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "on",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_porton_status",
+        "description": "Report luz porton status from Telegram text command.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram porton status",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "/porton status"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "status",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_porton_light_on_capitalized",
-        "description":  "Spanish natural-language alias with capital first word to turn luz porton on.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram porton light on capitalized",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "Encender luz porton"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "on",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_porton_light_on_lower",
+        "description": "Spanish natural-language alias to turn luz porton on.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram porton light on lower",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "encender luz porton"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "on",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_porton_light_off_lower",
-        "description":  "Spanish natural-language alias to turn luz porton off.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram porton light off lower",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "apagar luz porton"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "off",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_porton_light_on_capitalized",
+        "description": "Spanish natural-language alias with capital first word to turn luz porton on.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram porton light on capitalized",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "Encender luz porton"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "on",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_porton_light_off_capitalized",
-        "description":  "Spanish natural-language alias with capital first word to turn luz porton off.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram porton light off capitalized",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "Apagar luz porton"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "off",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_porton_light_on_accented_capitalized",
+        "description": "Spanish natural-language alias with accent and capital first word to turn luz porton on.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram porton light on accented capitalized",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "Encender luz portón"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "on",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "telegram_porton_light_status",
-        "description":  "Spanish natural-language alias to report luz porton status.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "telegram porton light status",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "source_channel":  "telegram",
-                      "content_type":  "text",
-                      "text":  "Luz porton estado"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_script",
-                            "input":  {
-                                          "path":  "user/espnow_porton_command.lua",
-                                            "args":  {
-                                                         "action":  "status",
-                                                         "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
-                                                     }
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}"
-                                      }
-                        }
-                    ]
+        "id": "telegram_porton_light_off_lower",
+        "description": "Spanish natural-language alias to turn luz porton off.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram porton light off lower",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "apagar luz porton"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "off",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "espnow_porton_confirm_on",
-        "description":  "Send a fixed Telegram confirmation when the slave reports luz porton ON.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "espnow porton confirm on",
-        "match":  {
-                      "source_cap":  "espnow_link",
-                      "event_type":  "espnow_porton_confirm",
-                      "event_key":  "on",
-                      "content_type":  "trigger"
-                  },
-        "actions":  [
-                        {
-                            "type":  "call_cap",
-                            "cap":  "tg_send_message",
-                            "input":  {
-                                          "chat_id":  "{{event.payload.chat_id}}",
-                                          "message":  "Recibida confirmacion del esclavo ESP-NOW.\n\n**Estado confirmado del porton:**\n- Luz: ✅ **ENCENDIDA**\n\nTodo en orden: el esclavo reporta que la luz del porton esta activa.",
-                                          "parse_mode":  "Markdown"
-                                      }
-                        }
-                    ]
+        "id": "telegram_porton_light_off_capitalized",
+        "description": "Spanish natural-language alias with capital first word to turn luz porton off.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram porton light off capitalized",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "Apagar luz porton"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "off",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "espnow_porton_confirm_off",
-        "description":  "Send a fixed Telegram confirmation when the slave reports luz porton OFF.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "espnow porton confirm off",
-        "match":  {
-                      "source_cap":  "espnow_link",
-                      "event_type":  "espnow_porton_confirm",
-                      "event_key":  "off",
-                      "content_type":  "trigger"
-                  },
-        "actions":  [
-                        {
-                            "type":  "call_cap",
-                            "cap":  "tg_send_message",
-                            "input":  {
-                                          "chat_id":  "{{event.payload.chat_id}}",
-                                          "message":  "Recibida confirmacion del esclavo ESP-NOW.\n\n**Estado confirmado del porton:**\n- Luz: ⛔ **APAGADA**\n\nTodo en orden: el esclavo reporta que la luz del porton esta apagada.",
-                                          "parse_mode":  "Markdown"
-                                      }
-                        }
-                    ]
+        "id": "telegram_porton_light_off_accented_capitalized",
+        "description": "Spanish natural-language alias with accent and capital first word to turn luz porton off.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram porton light off accented capitalized",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "Apagar luz portón"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "off",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "im_new_session",
-        "description":  "Start a fresh persistent chat session when the user sends /new.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "{{event.source_channel}} new session started",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "content_type":  "text",
-                      "text":  "/new"
-                  },
-        "actions":  [
-                        {
-                            "type":  "call_cap",
-                            "cap":  "roll_chat_session",
-                            "input":  {
-
-                                      }
-                        },
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}",
-                                          "message":  "Started a new session."
-                                      }
-                        }
-                    ]
+        "id": "telegram_porton_light_status",
+        "description": "Spanish natural-language alias to report luz porton status.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "telegram porton light status",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "source_channel": "telegram",
+            "content_type": "text",
+            "text": "Luz porton estado"
+        },
+        "actions": [
+            {
+                "type": "run_script",
+                "input": {
+                    "path": "user/espnow_porton_command.lua",
+                    "args": {
+                        "action": "status",
+                        "chat_id": "{{event.chat_id}}",
+                        "peer_mac": "14:2b:2f:db:e4:f4"
+                    }
+                }
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}"
+                }
+            }
+        ]
     },
     {
-        "id":  "im_any_message_working_reply",
-        "description":  "Reply to any IM text message before other automation handling.",
-        "enabled":  true,
-        "consume_on_match":  false,
-        "ack":  "{{event.source_channel}} working reply sent",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "content_type":  "text"
-                  },
-        "actions":  [
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}",
-                                          "message":  "🦞 ESP-Claw esta trabajando...."
-                                      }
-                        }
-                    ]
+        "id": "espnow_porton_confirm_on",
+        "description": "Send a Telegram confirmation when the slave reports luz porton ON.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "espnow porton confirm on",
+        "match": {
+            "source_cap": "espnow_link",
+            "event_type": "espnow_porton_confirm",
+            "event_key": "on",
+            "content_type": "trigger"
+        },
+        "actions": [
+            {
+                "type": "call_cap",
+                "cap": "tg_send_message",
+                "input": {
+                    "chat_id": "{{event.payload.chat_id}}",
+                    "message": "✅ *Portón encendido*\nConfirmado por el nodo ESP-NOW.",
+                    "parse_mode": "Markdown"
+                }
+            }
+        ]
     },
     {
-        "id":  "im_attachment_saved_reply",
-        "description":  "Reply when an IM attachment is saved.",
-        "enabled":  true,
-        "ack":  "{{event.channel}} attachment saved",
-        "match":  {
-                      "event_type":  "attachment_saved"
-                  },
-        "actions":  [
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}",
-                                          "message":  "File received from {{event.source_channel}}"
-                                      }
-                        }
-                    ]
+        "id": "espnow_porton_confirm_off",
+        "description": "Send a Telegram confirmation when the slave reports luz porton OFF.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "espnow porton confirm off",
+        "match": {
+            "source_cap": "espnow_link",
+            "event_type": "espnow_porton_confirm",
+            "event_key": "off",
+            "content_type": "trigger"
+        },
+        "actions": [
+            {
+                "type": "call_cap",
+                "cap": "tg_send_message",
+                "input": {
+                    "chat_id": "{{event.payload.chat_id}}",
+                    "message": "⛔ *Portón apagado*\nConfirmado por el nodo ESP-NOW.",
+                    "parse_mode": "Markdown"
+                }
+            }
+        ]
     },
     {
-        "id":  "im_any_message_agent",
-        "description":  "Route IM text messages to the agent.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "{{event.source_channel}} routed to agent",
-        "match":  {
-                      "event_type":  "message",
-                      "event_key":  "text",
-                      "content_type":  "text"
-                  },
-        "actions":  [
-                        {
-                            "type":  "run_agent",
-                            "input":  {
-                                          "target_channel":  "{{event.source_channel}}",
-                                          "session_policy":  "chat"
-                                      }
-                        }
-                    ]
+        "id": "im_new_session",
+        "description": "Start a fresh persistent chat session when the user sends /new.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "{{event.source_channel}} new session started",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "content_type": "text",
+            "text": "/new"
+        },
+        "actions": [
+            {
+                "type": "call_cap",
+                "cap": "roll_chat_session",
+                "input": {}
+            },
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}",
+                    "message": "Started a new session."
+                }
+            }
+        ]
     },
     {
-        "id":  "agent_stage_im_notify",
-        "description":  "Deliver agent stage progress messages to the original IM chat.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "{{event.source_channel}} agent stage sent",
-        "match":  {
-                      "source_cap":  "claw_core",
-                      "event_type":  "agent_stage",
-                      "content_type":  "text"
-                  },
-        "actions":  [
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "event_type":  "{{event.event_type}}",
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}",
-                                          "message":  "{{event.text}}"
-                                      }
-                        }
-                    ]
+        "id": "im_any_message_working_reply",
+        "description": "Reply to any IM text message before other automation handling.",
+        "enabled": true,
+        "consume_on_match": false,
+        "ack": "{{event.source_channel}} working reply sent",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "content_type": "text"
+        },
+        "actions": [
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}",
+                    "message": "🦞 ESP-Claw esta trabajando...."
+                }
+            }
+        ]
     },
     {
-        "id":  "agent_out_message_send_message",
-        "description":  "Deliver agent output messages to the original IM chat.",
-        "enabled":  true,
-        "consume_on_match":  true,
-        "ack":  "{{event.source_channel}} agent output sent",
-        "match":  {
-                      "source_cap":  "claw_core",
-                      "event_type":  "out_message",
-                      "content_type":  "text"
-                  },
-        "actions":  [
-                        {
-                            "type":  "send_message",
-                            "input":  {
-                                          "channel":  "{{event.source_channel}}",
-                                          "chat_id":  "{{event.chat_id}}",
-                                          "message":  "{{event.text}}"
-                                      }
-                        }
-                    ]
+        "id": "im_attachment_saved_reply",
+        "description": "Reply when an IM attachment is saved.",
+        "enabled": true,
+        "ack": "{{event.channel}} attachment saved",
+        "match": {
+            "event_type": "attachment_saved"
+        },
+        "actions": [
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}",
+                    "message": "File received from {{event.source_channel}}"
+                }
+            }
+        ]
+    },
+    {
+        "id": "im_any_message_agent",
+        "description": "Route IM text messages to the agent.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "{{event.source_channel}} routed to agent",
+        "match": {
+            "event_type": "message",
+            "event_key": "text",
+            "content_type": "text"
+        },
+        "actions": [
+            {
+                "type": "run_agent",
+                "input": {
+                    "target_channel": "{{event.source_channel}}",
+                    "session_policy": "chat"
+                }
+            }
+        ]
+    },
+    {
+        "id": "agent_stage_im_notify",
+        "description": "Deliver agent stage progress messages to the original IM chat.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "{{event.source_channel}} agent stage sent",
+        "match": {
+            "source_cap": "claw_core",
+            "event_type": "agent_stage",
+            "content_type": "text"
+        },
+        "actions": [
+            {
+                "type": "send_message",
+                "input": {
+                    "event_type": "{{event.event_type}}",
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}",
+                    "message": "{{event.text}}"
+                }
+            }
+        ]
+    },
+    {
+        "id": "agent_out_message_send_message",
+        "description": "Deliver agent output messages to the original IM chat.",
+        "enabled": true,
+        "consume_on_match": true,
+        "ack": "{{event.source_channel}} agent output sent",
+        "match": {
+            "source_cap": "claw_core",
+            "event_type": "out_message",
+            "content_type": "text"
+        },
+        "actions": [
+            {
+                "type": "send_message",
+                "input": {
+                    "channel": "{{event.source_channel}}",
+                    "chat_id": "{{event.chat_id}}",
+                    "message": "{{event.text}}"
+                }
+            }
+        ]
     }
 ]
