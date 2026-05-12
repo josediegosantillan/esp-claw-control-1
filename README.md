@@ -55,7 +55,7 @@ Current runtime behavior:
 
 - On every boot, both relays are forced to `OFF`
 - The last runtime state is stored in `/fatfs/relay_state.txt`
-- The estimated remote state for `luz porton` is stored in `/fatfs/porton_state.txt`
+- The last slave-confirmed state for `luz porton` is stored in `/fatfs/porton_state.txt`
 - The last Telegram chat waiting for slave confirmation is stored in `/fatfs/porton_last_chat.txt`
 - During a normal session, buttons and Telegram share the same persisted relay state
 - After a power loss, the device does not restore the last relay state; it starts with both relays off

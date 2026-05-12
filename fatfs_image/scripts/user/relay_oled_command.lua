@@ -114,7 +114,7 @@ elseif requested == "status" then
       icon1 .. " *Taller (R1):* " .. label1,
       icon2 .. " *Patio  (R2):* " .. label2,
       porton_icon .. " *Luz porton:* " .. porton_label,
-      "_Porton: estado estimado segun ultimo comando enviado._",
+      "_Porton: ultimo estado confirmado por el esclavo._",
     }, "\n"),
     reply_markup = PANEL_MARKUP
   }

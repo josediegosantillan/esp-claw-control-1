@@ -75,8 +75,10 @@ end
 local estimated = read_estimated_state()
 
 if action == "status" then
+    write_last_chat_route()
+    send_payload("rele status")
     print(string.format(
-        "Luz porton: %s\nEstado estimado segun ultimo comando guardado.",
+        "Consultando estado real del porton por ESP-NOW...\nUltimo estado guardado: %s",
         status_label(estimated)))
     return
 end

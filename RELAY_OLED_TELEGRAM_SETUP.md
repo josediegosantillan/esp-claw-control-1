@@ -127,8 +127,9 @@ Puntos importantes:
 - `write_state()` actualiza el archivo y luego aplica el nivel correcto en GPIO
 - `toggle_state()` conmuta segun el estado persistido compartido
 - botones y Telegram usan la misma fuente de verdad
-- `luz porton` no usa GPIO local; envia payloads `ESP-NOW` al esclavo y guarda un estado estimado en `/fatfs/porton_state.txt`
-- cuando el esclavo responde `ok relay=on` o `ok relay=off`, el maestro reenvia esa confirmacion al ultimo chat de Telegram que emitio el comando, usando `/fatfs/porton_last_chat.txt`
+- `luz porton` no usa GPIO local; envia payloads `ESP-NOW` al esclavo y guarda en `/fatfs/porton_state.txt` el ultimo estado confirmado por el esclavo
+- `/porton status` consulta el estado real al esclavo con `rele status`
+- cuando el esclavo responde `ok relay=on` o `ok relay=off`, el maestro actualiza `/fatfs/porton_state.txt` y reenvia esa confirmacion al ultimo chat de Telegram que emitio el comando, usando `/fatfs/porton_last_chat.txt`
 
 Consecuencia operativa:
 

@@ -1597,7 +1597,7 @@
                                             "args":  {
                                                          "action":  "on",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },
@@ -1630,7 +1630,7 @@
                                             "args":  {
                                                          "action":  "off",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },
@@ -1663,7 +1663,7 @@
                                             "args":  {
                                                          "action":  "toggle",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },
@@ -1696,7 +1696,7 @@
                                             "args":  {
                                                          "action":  "status",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },
@@ -1730,7 +1730,7 @@
                                             "args":  {
                                                          "action":  "on",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },
@@ -1764,7 +1764,7 @@
                                             "args":  {
                                                          "action":  "off",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },
@@ -1798,7 +1798,7 @@
                                             "args":  {
                                                          "action":  "toggle",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },
@@ -1832,7 +1832,7 @@
                                             "args":  {
                                                          "action":  "status",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },
@@ -1866,7 +1866,7 @@
                                             "args":  {
                                                          "action":  "on",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },
@@ -1900,7 +1900,7 @@
                                             "args":  {
                                                          "action":  "on",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },
@@ -1934,7 +1934,7 @@
                                             "args":  {
                                                          "action":  "off",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },
@@ -1968,7 +1968,7 @@
                                             "args":  {
                                                          "action":  "off",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },
@@ -2002,7 +2002,7 @@
                                             "args":  {
                                                          "action":  "status",
                                                          "chat_id":  "{{event.chat_id}}",
-                                                         "peer_mac":  "D4:E9:F4:64:B5:C4"
+                                                         "peer_mac":  "14:2b:2f:db:e4:f4"
                                                      }
                                       }
                         },

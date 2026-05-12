@@ -17,6 +17,7 @@
 
 static const char *TAG = "espnow_link";
 static const char *PORTON_LAST_CHAT_PATH = "/fatfs/porton_last_chat.txt";
+static const char *PORTON_STATE_PATH = "/fatfs/porton_state.txt";
 
 #define ESPNOW_LINK_CONFIRM_QUEUE_LEN 4
 #define ESPNOW_LINK_CONFIRM_TEXT_LEN 32
@@ -125,6 +126,31 @@ static bool is_porton_confirm_payload(const uint8_t *data, size_t len)
            (len == strlen("ok relay=off") && memcmp(data, "ok relay=off", len) == 0);
 }
 
+static void persist_porton_confirmed_state(const char *event_key)
+{
+    if (!event_key) {
+        return;
+    }
+
+    const char *state = NULL;
+    if (strcmp(event_key, "on") == 0) {
+        state = "on";
+    } else if (strcmp(event_key, "off") == 0) {
+        state = "off";
+    } else {
+        return;
+    }
+
+    FILE *file = fopen(PORTON_STATE_PATH, "w");
+    if (!file) {
+        ESP_LOGW(TAG, "porton confirm state persist failed: fopen(%s)", PORTON_STATE_PATH);
+        return;
+    }
+
+    fprintf(file, "%s\n", state);
+    fclose(file);
+}
+
 static esp_err_t load_porton_chat_route(char *chat_id, size_t chat_id_size, uint8_t peer_mac[6])
 {
     if (!chat_id || chat_id_size == 0 || !peer_mac) {
@@ -190,6 +216,8 @@ static void espnow_link_confirm_task_fn(void *arg)
             ESP_LOGD(TAG, "porton confirm ignored: unexpected peer " MACSTR, MAC2STR(event.src_mac));
             continue;
         }
+
+        persist_porton_confirmed_state(event_key);
 
         char payload[128] = {0};
         snprintf(payload,
