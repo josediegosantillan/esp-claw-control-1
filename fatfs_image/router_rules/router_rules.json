@@ -577,7 +577,7 @@
     },
     {
         "id": "telegram_callback_relay2_status",
-        "description": "Report relay 2 status from a Telegram callback button. (Botón eliminado del panel — conservada para texto directo)",
+        "description": "Report relay 2 status from a Telegram callback button. (BotÃ³n eliminado del panel â€” conservada para texto directo)",
         "enabled": false,
         "consume_on_match": true,
         "ack": "telegram callback relay2 status",
@@ -2151,7 +2151,7 @@
                 "cap": "tg_send_message",
                 "input": {
                     "chat_id": "{{event.payload.chat_id}}",
-                    "message": "✅ *Portón encendido*\nConfirmado por el nodo ESP-NOW.",
+                    "message": "✅ *Portón encendido*\nConfirmado por el nodo ESP-NOW.\nSeñal RSSI: `{{event.payload.rssi}} dBm` ({{event.payload.rssi_quality}})",
                     "parse_mode": "Markdown"
                 }
             }
@@ -2175,7 +2175,7 @@
                 "cap": "tg_send_message",
                 "input": {
                     "chat_id": "{{event.payload.chat_id}}",
-                    "message": "⛔ *Portón apagado*\nConfirmado por el nodo ESP-NOW.",
+                    "message": "⛔ *Portón apagado*\nConfirmado por el nodo ESP-NOW.\nSeñal RSSI: `{{event.payload.rssi}} dBm` ({{event.payload.rssi_quality}})",
                     "parse_mode": "Markdown"
                 }
             }

@@ -25,6 +25,7 @@ static const char *PORTON_STATE_PATH = "/fatfs/porton_state.txt";
 
 typedef struct {
     uint8_t src_mac[6];
+    int rssi;
     char text[ESPNOW_LINK_CONFIRM_TEXT_LEN];
 } espnow_link_confirm_event_t;
 
@@ -97,6 +98,23 @@ static bool parse_porton_confirm_text(const char *text, const char **state_label
     }
 
     return false;
+}
+
+static const char *porton_rssi_quality_label(int rssi)
+{
+    if (rssi >= -55) {
+        return "EXCELENTE";
+    }
+
+    if (rssi >= -67) {
+        return "BUENA";
+    }
+
+    if (rssi >= -75) {
+        return "REGULAR";
+    }
+
+    return "MALA";
 }
 
 static const char *porton_confirm_event_key(const char *text)
@@ -196,6 +214,7 @@ static void espnow_link_confirm_task_fn(void *arg)
 
         const char *state_label = NULL;
         const char *event_key = NULL;
+        const char *rssi_quality = NULL;
         if (!parse_porton_confirm_text(event.text, &state_label)) {
             continue;
         }
@@ -203,6 +222,7 @@ static void espnow_link_confirm_task_fn(void *arg)
         if (!event_key) {
             continue;
         }
+        rssi_quality = porton_rssi_quality_label(event.rssi);
 
         char chat_id[ESPNOW_LINK_CHAT_ID_LEN] = {0};
         uint8_t expected_mac[6] = {0};
@@ -219,19 +239,21 @@ static void espnow_link_confirm_task_fn(void *arg)
 
         persist_porton_confirmed_state(event_key);
 
-        char payload[128] = {0};
+        char payload[192] = {0};
         snprintf(payload,
                  sizeof(payload),
-                 "{\"chat_id\":\"%s\",\"state\":\"%s\"}",
+                 "{\"chat_id\":\"%s\",\"state\":\"%s\",\"rssi\":%d,\"rssi_quality\":\"%s\"}",
                  chat_id,
-                 state_label);
+                 state_label,
+                 event.rssi,
+                 rssi_quality);
         esp_err_t send_err = claw_event_router_publish_trigger("espnow_link",
                                                                "espnow_porton_confirm",
                                                                event_key,
                                                                payload);
         if (send_err == ESP_OK) {
-            ESP_LOGI(TAG, "porton confirm published chat=%s peer=" MACSTR " state=%s",
-                     chat_id, MAC2STR(event.src_mac), state_label);
+            ESP_LOGI(TAG, "porton confirm published chat=%s peer=" MACSTR " state=%s rssi=%d quality=%s",
+                     chat_id, MAC2STR(event.src_mac), state_label, event.rssi, rssi_quality);
         } else {
             ESP_LOGW(TAG, "porton confirm publish failed chat=%s: %s", chat_id, esp_err_to_name(send_err));
         }
@@ -299,6 +321,7 @@ static void espnow_link_recv_cb(const esp_now_recv_info_t *recv_info, const uint
 
     espnow_link_confirm_event_t event = {0};
     memcpy(event.src_mac, recv_info->src_addr, sizeof(event.src_mac));
+    event.rssi = rssi;
 
     size_t copy_len = (size_t)data_len;
     if (copy_len >= sizeof(event.text)) {

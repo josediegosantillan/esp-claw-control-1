@@ -2033,7 +2033,7 @@
                             "cap":  "tg_send_message",
                             "input":  {
                                           "chat_id":  "{{event.payload.chat_id}}",
-                                          "message":  "Recibida confirmacion del esclavo ESP-NOW.\n\n**Estado confirmado del porton:**\n- Luz: ✅ **ENCENDIDA**\n\nTodo en orden: el esclavo reporta que la luz del porton esta activa.",
+                                          "message":  "Recibida confirmacion del esclavo ESP-NOW.\n\n**Estado confirmado del porton:**\n- Luz: ✅ **ENCENDIDA**\n- Señal RSSI: `{{event.payload.rssi}} dBm` ({{event.payload.rssi_quality}})\n\nTodo en orden: el esclavo reporta que la luz del porton esta activa.",
                                           "parse_mode":  "Markdown"
                                       }
                         }
@@ -2057,7 +2057,7 @@
                             "cap":  "tg_send_message",
                             "input":  {
                                           "chat_id":  "{{event.payload.chat_id}}",
-                                          "message":  "Recibida confirmacion del esclavo ESP-NOW.\n\n**Estado confirmado del porton:**\n- Luz: ⛔ **APAGADA**\n\nTodo en orden: el esclavo reporta que la luz del porton esta apagada.",
+                                          "message":  "Recibida confirmacion del esclavo ESP-NOW.\n\n**Estado confirmado del porton:**\n- Luz: ⛔ **APAGADA**\n- Señal RSSI: `{{event.payload.rssi}} dBm` ({{event.payload.rssi_quality}})\n\nTodo en orden: el esclavo reporta que la luz del porton esta apagada.",
                                           "parse_mode":  "Markdown"
                                       }
                         }
