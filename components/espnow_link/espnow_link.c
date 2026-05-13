@@ -16,6 +16,7 @@
 #include "esp_wifi.h"
 
 static const char *TAG = "espnow_link";
+static const char *RADIO_TAG = "radio";
 static const char *PORTON_LAST_CHAT_PATH = "/fatfs/porton_last_chat.txt";
 static const char *PORTON_STATE_PATH = "/fatfs/porton_state.txt";
 
@@ -28,6 +29,12 @@ typedef struct {
     int rssi;
     char text[ESPNOW_LINK_CONFIRM_TEXT_LEN];
 } espnow_link_confirm_event_t;
+
+typedef enum {
+    PORTON_RX_KIND_NONE = 0,
+    PORTON_RX_KIND_CONFIRM,
+    PORTON_RX_KIND_REMOTE_EVENT,
+} porton_rx_kind_t;
 
 static bool s_initialized;
 static uint8_t s_channel;
@@ -100,6 +107,55 @@ static bool parse_porton_confirm_text(const char *text, const char **state_label
     return false;
 }
 
+static bool parse_porton_remote_event_text(const char *text, const char **state_label)
+{
+    if (!text || !state_label) {
+        return false;
+    }
+
+    if (strcmp(text, "event relay=on") == 0) {
+        *state_label = "ENCENDIDA";
+        return true;
+    }
+
+    if (strcmp(text, "event relay=off") == 0) {
+        *state_label = "APAGADA";
+        return true;
+    }
+
+    return false;
+}
+
+static void log_wifi_radio_state(const char *label)
+{
+    uint8_t self_mac[6] = {0};
+    uint8_t primary = 0;
+    wifi_second_chan_t second = WIFI_SECOND_CHAN_NONE;
+    int8_t tx_power = 0;
+
+    esp_err_t mac_err = esp_wifi_get_mac(WIFI_IF_STA, self_mac);
+    esp_err_t channel_err = esp_wifi_get_channel(&primary, &second);
+    esp_err_t tx_err = esp_wifi_get_max_tx_power(&tx_power);
+
+    if (mac_err == ESP_OK && channel_err == ESP_OK && tx_err == ESP_OK) {
+        ESP_LOGI(RADIO_TAG,
+                 "%s self=" MACSTR " channel=%u tx_power_raw=%d approx_dbm=%d",
+                 label,
+                 MAC2STR(self_mac),
+                 primary,
+                 tx_power,
+                 tx_power / 4);
+        return;
+    }
+
+    ESP_LOGW(RADIO_TAG,
+             "%s mac_err=%s channel_err=%s tx_err=%s",
+             label,
+             esp_err_to_name(mac_err),
+             esp_err_to_name(channel_err),
+             esp_err_to_name(tx_err));
+}
+
 static const char *porton_rssi_quality_label(int rssi)
 {
     if (rssi >= -55) {
@@ -134,6 +190,23 @@ static const char *porton_confirm_event_key(const char *text)
     return NULL;
 }
 
+static const char *porton_remote_event_key(const char *text)
+{
+    if (!text) {
+        return NULL;
+    }
+
+    if (strcmp(text, "event relay=on") == 0) {
+        return "on";
+    }
+
+    if (strcmp(text, "event relay=off") == 0) {
+        return "off";
+    }
+
+    return NULL;
+}
+
 static bool is_porton_confirm_payload(const uint8_t *data, size_t len)
 {
     if (!data) {
@@ -142,6 +215,29 @@ static bool is_porton_confirm_payload(const uint8_t *data, size_t len)
 
     return (len == strlen("ok relay=on") && memcmp(data, "ok relay=on", len) == 0) ||
            (len == strlen("ok relay=off") && memcmp(data, "ok relay=off", len) == 0);
+}
+
+static bool is_porton_remote_event_payload(const uint8_t *data, size_t len)
+{
+    if (!data) {
+        return false;
+    }
+
+    return (len == strlen("event relay=on") && memcmp(data, "event relay=on", len) == 0) ||
+           (len == strlen("event relay=off") && memcmp(data, "event relay=off", len) == 0);
+}
+
+static porton_rx_kind_t detect_porton_rx_kind(const uint8_t *data, size_t len)
+{
+    if (is_porton_confirm_payload(data, len)) {
+        return PORTON_RX_KIND_CONFIRM;
+    }
+
+    if (is_porton_remote_event_payload(data, len)) {
+        return PORTON_RX_KIND_REMOTE_EVENT;
+    }
+
+    return PORTON_RX_KIND_NONE;
 }
 
 static void persist_porton_confirmed_state(const char *event_key)
@@ -215,47 +311,84 @@ static void espnow_link_confirm_task_fn(void *arg)
         const char *state_label = NULL;
         const char *event_key = NULL;
         const char *rssi_quality = NULL;
-        if (!parse_porton_confirm_text(event.text, &state_label)) {
+        porton_rx_kind_t rx_kind = detect_porton_rx_kind((const uint8_t *)event.text, strlen(event.text));
+
+        if (rx_kind == PORTON_RX_KIND_CONFIRM) {
+            if (!parse_porton_confirm_text(event.text, &state_label)) {
+                continue;
+            }
+            event_key = porton_confirm_event_key(event.text);
+        } else if (rx_kind == PORTON_RX_KIND_REMOTE_EVENT) {
+            if (!parse_porton_remote_event_text(event.text, &state_label)) {
+                continue;
+            }
+            event_key = porton_remote_event_key(event.text);
+        } else {
             continue;
         }
-        event_key = porton_confirm_event_key(event.text);
+
         if (!event_key) {
             continue;
         }
         rssi_quality = porton_rssi_quality_label(event.rssi);
 
-        char chat_id[ESPNOW_LINK_CHAT_ID_LEN] = {0};
-        uint8_t expected_mac[6] = {0};
-        esp_err_t route_err = load_porton_chat_route(chat_id, sizeof(chat_id), expected_mac);
-        if (route_err != ESP_OK) {
-            ESP_LOGD(TAG, "porton confirm ignored: chat route unavailable (%s)", esp_err_to_name(route_err));
-            continue;
-        }
-
-        if (memcmp(expected_mac, event.src_mac, sizeof(expected_mac)) != 0) {
-            ESP_LOGD(TAG, "porton confirm ignored: unexpected peer " MACSTR, MAC2STR(event.src_mac));
-            continue;
-        }
-
         persist_porton_confirmed_state(event_key);
 
-        char payload[192] = {0};
-        snprintf(payload,
-                 sizeof(payload),
-                 "{\"chat_id\":\"%s\",\"state\":\"%s\",\"rssi\":%d,\"rssi_quality\":\"%s\"}",
-                 chat_id,
-                 state_label,
-                 event.rssi,
-                 rssi_quality);
-        esp_err_t send_err = claw_event_router_publish_trigger("espnow_link",
-                                                               "espnow_porton_confirm",
-                                                               event_key,
-                                                               payload);
-        if (send_err == ESP_OK) {
-            ESP_LOGI(TAG, "porton confirm published chat=%s peer=" MACSTR " state=%s rssi=%d quality=%s",
-                     chat_id, MAC2STR(event.src_mac), state_label, event.rssi, rssi_quality);
-        } else {
-            ESP_LOGW(TAG, "porton confirm publish failed chat=%s: %s", chat_id, esp_err_to_name(send_err));
+        if (rx_kind == PORTON_RX_KIND_CONFIRM) {
+            char chat_id[ESPNOW_LINK_CHAT_ID_LEN] = {0};
+            uint8_t expected_mac[6] = {0};
+            esp_err_t route_err = load_porton_chat_route(chat_id, sizeof(chat_id), expected_mac);
+            if (route_err != ESP_OK) {
+                ESP_LOGD(TAG, "porton confirm ignored: chat route unavailable (%s)", esp_err_to_name(route_err));
+                continue;
+            }
+
+            if (memcmp(expected_mac, event.src_mac, sizeof(expected_mac)) != 0) {
+                ESP_LOGD(TAG, "porton confirm ignored: unexpected peer " MACSTR, MAC2STR(event.src_mac));
+                continue;
+            }
+
+            char payload[192] = {0};
+            snprintf(payload,
+                     sizeof(payload),
+                     "{\"chat_id\":\"%s\",\"state\":\"%s\",\"rssi\":%d,\"rssi_quality\":\"%s\"}",
+                     chat_id,
+                     state_label,
+                     event.rssi,
+                     rssi_quality);
+            esp_err_t send_err = claw_event_router_publish_trigger("espnow_link",
+                                                                   "espnow_porton_confirm",
+                                                                   event_key,
+                                                                   payload);
+            if (send_err == ESP_OK) {
+                ESP_LOGI(TAG, "porton confirm published chat=%s peer=" MACSTR " state=%s rssi=%d quality=%s",
+                         chat_id, MAC2STR(event.src_mac), state_label, event.rssi, rssi_quality);
+            } else {
+                ESP_LOGW(TAG, "porton confirm publish failed chat=%s: %s", chat_id, esp_err_to_name(send_err));
+            }
+            continue;
+        }
+
+        if (rx_kind == PORTON_RX_KIND_REMOTE_EVENT) {
+            char payload[160] = {0};
+            snprintf(payload,
+                     sizeof(payload),
+                     "{\"state\":\"%s\",\"rssi\":%d,\"rssi_quality\":\"%s\",\"peer_mac\":\"" MACSTR "\"}",
+                     state_label,
+                     event.rssi,
+                     rssi_quality,
+                     MAC2STR(event.src_mac));
+            esp_err_t send_err = claw_event_router_publish_trigger("espnow_link",
+                                                                   "espnow_porton_remote_event",
+                                                                   event_key,
+                                                                   payload);
+            if (send_err == ESP_OK) {
+                ESP_LOGI(TAG, "porton remote event published peer=" MACSTR " state=%s rssi=%d quality=%s",
+                         MAC2STR(event.src_mac), state_label, event.rssi, rssi_quality);
+            } else {
+                ESP_LOGW(TAG, "porton remote event publish failed peer=" MACSTR ": %s",
+                         MAC2STR(event.src_mac), esp_err_to_name(send_err));
+            }
         }
     }
 }
@@ -304,18 +437,14 @@ static void espnow_link_recv_cb(const esp_now_recv_info_t *recv_info, const uint
     }
 
     int rssi = recv_info->rx_ctrl ? recv_info->rx_ctrl->rssi : 0;
-    ESP_LOGI(TAG, "rx peer=" MACSTR " len=%d rssi=%d data=%.*s",
-             MAC2STR(recv_info->src_addr),
-             data_len,
-             rssi,
-             data_len,
-             (const char *)data);
+    ESP_LOGI("espnow", "rx from " MACSTR " len=%d rssi=%d text=%.*s",
+             MAC2STR(recv_info->src_addr), data_len, rssi, data_len, (const char *)data);
 
     if (!s_confirm_queue) {
         return;
     }
 
-    if (!is_porton_confirm_payload(data, (size_t)data_len)) {
+    if (detect_porton_rx_kind(data, (size_t)data_len) == PORTON_RX_KIND_NONE) {
         return;
     }
 
@@ -376,6 +505,7 @@ esp_err_t espnow_link_start(uint8_t channel, bool long_range)
             TAG,
             "enable LR on STA failed");
     }
+    ESP_RETURN_ON_ERROR(esp_wifi_set_max_tx_power(80), TAG, "set STA max TX power failed");
 
     s_channel = channel;
     s_long_range = long_range;
@@ -386,6 +516,7 @@ esp_err_t espnow_link_start(uint8_t channel, bool long_range)
     } else {
         ESP_LOGI(TAG, "ESP-NOW ready channel=%u lr=%d", s_channel, s_long_range);
     }
+    log_wifi_radio_state("espnow ready");
 
     return ESP_OK;
 }

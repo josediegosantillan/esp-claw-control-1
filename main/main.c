@@ -38,6 +38,7 @@
 #define WIFI_RESET_HOLD_MS        6000
 #define WIFI_RESET_POLL_MS        50
 #define WIFI_RESET_TASK_STACK     4096
+#define APP_ESPNOW_FALLBACK_CHANNEL 11
 
 static const char *TAG = "app";
 
@@ -263,6 +264,40 @@ static void on_wifi_state_changed(bool connected, void *user_ctx)
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "Failed to update network emote: %s", esp_err_to_name(err));
     }
+}
+
+static esp_err_t configure_wifi_sta_radio_for_espnow(void)
+{
+    wifi_manager_status_t status = {0};
+    wifi_manager_get_status(&status);
+
+    if (!status.ap_active) {
+        ESP_RETURN_ON_ERROR(esp_wifi_set_mode(WIFI_MODE_STA), TAG, "Failed to force STA mode for ESP-NOW radio");
+    } else {
+        ESP_LOGW(TAG, "Provisioning AP active; keeping current Wi-Fi mode while applying STA radio settings");
+    }
+
+    ESP_RETURN_ON_ERROR(
+        esp_wifi_set_protocol(
+            WIFI_IF_STA,
+            WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N | WIFI_PROTOCOL_LR),
+        TAG,
+        "Failed to enable LR on STA");
+    ESP_RETURN_ON_ERROR(esp_wifi_set_max_tx_power(80), TAG, "Failed to set STA max TX power");
+    return ESP_OK;
+}
+
+static uint8_t choose_espnow_channel(void)
+{
+    wifi_manager_status_t status = {0};
+    wifi_manager_get_status(&status);
+
+    if (status.sta_connected) {
+        return 0;
+    }
+
+    ESP_LOGW(TAG, "STA not connected; using fixed ESP-NOW fallback channel %u", APP_ESPNOW_FALLBACK_CHANNEL);
+    return APP_ESPNOW_FALLBACK_CHANNEL;
 }
 
 static esp_err_t app_claw_init_storage_paths(app_claw_storage_paths_t *paths)
@@ -528,6 +563,7 @@ void app_main(void)
     if (wifi_err != ESP_OK) {
         ESP_LOGE(TAG, "Wi-Fi start failed: %s", esp_err_to_name(wifi_err));
     } else {
+        ESP_ERROR_CHECK(configure_wifi_sta_radio_for_espnow());
         ESP_ERROR_CHECK(http_server_start());
         if (s_config->wifi_ssid[0] == '\0') {
             if (captive_dns_start(&(captive_dns_config_t) {
@@ -570,7 +606,7 @@ void app_main(void)
     ESP_ERROR_CHECK(init_wifi_reset_button());
 
     if (wifi_err == ESP_OK) {
-        esp_err_t espnow_err = espnow_link_start(0, false);
+        esp_err_t espnow_err = espnow_link_start(choose_espnow_channel(), true);
         if (espnow_err != ESP_OK) {
             ESP_LOGW(TAG, "ESP-NOW init skipped: %s", esp_err_to_name(espnow_err));
         }
