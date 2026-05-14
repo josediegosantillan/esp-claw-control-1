@@ -7,6 +7,7 @@ local shared = dofile("/fatfs/scripts/user/relay_oled_shared.lua")
 
 local cfg       = shared.load_config(args)
 local requested = type(args) == "table" and args.action or "status"
+local live_status_request = (requested == "status_live" or requested == "status:all_live")
 local state, action = shared.apply_action(cfg, requested)
 
 -- ─────────────────────────────────────────────────────────────
@@ -50,8 +51,9 @@ local PANEL_ACTIONS = {
   encender = true, apagar = true
 }
 
--- status:all se trata igual que status
-if requested == "status:all" then requested = "status" end
+-- status:all y variantes live se tratan igual que status
+if requested == "status:all" or requested == "status:all_live" then requested = "status" end
+if requested == "status_live" then requested = "status" end
 
 -- ─────────────────────────────────────────────────────────────
 -- HELPERS DE FORMATO
@@ -114,6 +116,15 @@ elseif requested == "help" or requested == "ayuda" then
   }
 
 elseif requested == "status" then
+  local porton_note = "_PortÃ³n: Ãºltimo estado confirmado por el esclavo._"
+  if live_status_request then
+    porton_note = "_PortÃ³n: consultando estado real por ESP-NOW; este valor puede actualizarse enseguida._"
+  end
+  if live_status_request then
+    porton_note = "_Porton: consultando estado real por ESP-NOW; este valor puede actualizarse enseguida._"
+  else
+    porton_note = "_Porton: ultimo estado confirmado por el esclavo._"
+  end
   -- ── ESTADO GENERAL ───────────────────────────────────────
   response = {
     text = table.concat({
@@ -121,7 +132,7 @@ elseif requested == "status" then
       "",
       build_status_lines(state),
       "",
-      "_Portón: último estado confirmado por el esclavo._",
+      porton_note,
     }, "\n"),
     reply_markup = PANEL_MARKUP
   }

@@ -462,9 +462,20 @@
                         {
                             "type":  "run_script",
                             "input":  {
+                                          "path":  "user/espnow_porton_command.lua",
+                                          "args":  {
+                                                       "action":  "status",
+                                                       "chat_id":  "{{event.chat_id}}",
+                                                       "peer_mac":  "14:2b:2f:db:e4:f4"
+                                                   }
+                                      }
+                        },
+                        {
+                            "type":  "run_script",
+                            "input":  {
                                           "path":  "user/relay_oled_command.lua",
                                           "args":  {
-                                                       "action":  "status:all",
+                                                       "action":  "status:all_live",
                                                        "relay_gpio":  4,
                                                        "relay_active_level":  1,
                                                        "button_gpio":  5,
@@ -768,9 +779,20 @@
                         {
                             "type":  "run_script",
                             "input":  {
-                                          "path":  "user/relay_oled_command.lua",
+                                          "path":  "user/espnow_porton_command.lua",
                                           "args":  {
                                                        "action":  "status",
+                                                       "chat_id":  "{{event.chat_id}}",
+                                                       "peer_mac":  "14:2b:2f:db:e4:f4"
+                                                   }
+                                      }
+                        },
+                        {
+                            "type":  "run_script",
+                            "input":  {
+                                          "path":  "user/relay_oled_command.lua",
+                                          "args":  {
+                                                       "action":  "status_live",
                                                        "relay_gpio":  4,
                                                        "relay_active_level":  1,
                                                        "button_gpio":  5,
