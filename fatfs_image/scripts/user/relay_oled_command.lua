@@ -100,6 +100,8 @@ elseif requested == "help" or requested == "ayuda" then
       "🦞 *ESP-Claw* — Comandos disponibles",
       "",
       "*/panel*  — panel con botones",
+      "*/estado* - estado general de reles",
+      "*/menu*   - alias de /panel",
       "*/relay on|off|toggle|status*",
       "*/relay2 on|off|toggle|status*",
       "*/porton on|off|toggle|status*",
